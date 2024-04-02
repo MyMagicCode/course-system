@@ -63,11 +63,7 @@ const menuList: MenuProps["items"] = [
     label: "考试",
   },
   {
-    key: "/teaching-schedule",
-    label: "排课",
-  },
-  {
-    key: "/exam-arrangements",
-    label: "考试排期",
+    key: "/scheduling",
+    label: "排期",
   },
 ];
