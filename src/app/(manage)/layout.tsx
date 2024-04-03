@@ -25,7 +25,7 @@ export default function ManageLayout({ children }: PropsWithChildren) {
           alignItems: "center",
         }}>
         <div className="demo-logo">CSS</div>
-        <div style={{ maxWidth: "400px" }}>
+        <div style={{ maxWidth: "600px" }}>
           <Menu
             theme="dark"
             onClick={handleClick}
@@ -50,6 +50,10 @@ export default function ManageLayout({ children }: PropsWithChildren) {
 }
 
 const menuList: MenuProps["items"] = [
+  {
+    key: "/timetable",
+    label: "课程表",
+  },
   {
     key: "/semester",
     label: "学期",

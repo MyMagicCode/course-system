@@ -75,11 +75,11 @@ interface ClassroomProps {
 function Classroom({ value, onEdit }: ClassroomProps) {
   const { location, scheduleList } = value;
   return (
-    <div className="w-[200px] h-[260px] p-4 rounded-xl bg-white shadow-md">
+    <div className="w-[360px] h-[200px] p-4 rounded-xl bg-white shadow-md">
       <Text>{location}</Text>
       <Flex
         gap="4px 0"
-        className="h-[180px] overflow-y-scroll scroll-m-6 custom-scrollbar content-start"
+        className="h-[120px] overflow-y-scroll scroll-m-6 custom-scrollbar content-start"
         wrap="wrap"
         align="flex-start">
         {scheduleList.map(({ begin, end, label }, index) => {
