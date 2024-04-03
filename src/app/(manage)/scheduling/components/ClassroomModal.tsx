@@ -1,45 +1,59 @@
-import { Button, DatePicker, Form, FormProps, Input, Modal } from "antd";
-import dayjs, { Dayjs } from "dayjs";
+import {
+  Button,
+  DatePicker,
+  Form,
+  FormProps,
+  Input,
+  List,
+  Modal,
+  Radio,
+  Select,
+  Space,
+} from "antd";
+import dayjs from "dayjs";
+import { EditOutlined, HighlightOutlined } from "@ant-design/icons";
 import { forwardRef, useImperativeHandle, useState } from "react";
+import { ClassroomType, ScheduleType } from "./Classrooms";
 
-export interface SemesterModel {
-  code?: string;
-  id?: string;
-  name: string;
-  startTime: string;
-  endTime: string;
-}
+const { Option } = Select;
 
-export interface SemesterModalRef {
-  open: (item?: SemesterModel) => void;
+export interface ClassroomModalRef {
+  open: (item?: ClassroomType) => void;
   close: () => void;
 }
 
-function initData(): SemesterModel {
-  return { name: "", startTime: "", endTime: "" };
+function initData(): ClassroomType {
+  return {
+    id: "",
+    location: "",
+    scheduleList: [],
+  };
 }
+
+const options = [
+  { label: "课程", value: "0" },
+  { label: "考试", value: "1" },
+];
 
 /**
  * 新增和修改学期组件
  */
-export const ClassroomModal = forwardRef<SemesterModalRef>((_, ref) => {
-  const data = initData();
+export const ClassroomModal = forwardRef<ClassroomModalRef>((_, ref) => {
+  const [data, setData] = useState<ClassroomType>(initData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
-
-  const isEdit = !!data.id;
 
   // 暴露ref接口控制组件
   useImperativeHandle(
     ref,
     () => {
       return {
-        open(item?: SemesterModel) {
+        open(item?: ClassroomType) {
           if (item) {
-            form.setFieldsValue({
-              ...item,
-              endTime: dayjs(item.endTime),
-              startTime: dayjs(item.startTime),
+            const { scheduleList, ...other } = item;
+            setData({
+              ...other,
+              scheduleList: [...scheduleList],
             });
           }
           setIsModalOpen(true);
@@ -54,17 +68,41 @@ export const ClassroomModal = forwardRef<SemesterModalRef>((_, ref) => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
   };
 
-  const handleFinish: FormProps<SemesterModel>["onFinish"] = ({
-    endTime,
-    startTime,
+  const handleEditItem = (item: ScheduleType) => {
+    console.log("item", item);
+  };
+
+  const handleFormFinish: FormProps<ClassroomType>["onFinish"] = ({
     ...item
   }) => {
-    endTime = (endTime as any).format("YYYY-MM-DD");
-    startTime = (startTime as any).format("YYYY-MM-DD");
-    console.log("item", { ...item, endTime, startTime });
+    console.log("item", { ...item });
+  };
+
+  const onTypeChange = () => {
+    form.setFields([
+      {
+        name: "customizeGender",
+        errors: undefined,
+      },
+      {
+        name: "begin",
+        errors: undefined,
+      },
+      {
+        name: "num",
+        errors: undefined,
+      },
+      {
+        name: "students",
+        errors: undefined,
+      },
+      {
+        name: "teachers",
+        errors: undefined,
+      },
+    ]);
   };
 
   const validateMessages = {
@@ -75,58 +113,130 @@ export const ClassroomModal = forwardRef<SemesterModalRef>((_, ref) => {
     <Modal
       centered
       onCancel={handleCancel}
-      title={isEdit ? "编辑学期" : "新增学期"}
+      title={data.location + "教室排期"}
       footer={null}
+      width={600}
       open={isModalOpen}>
-      <Form
-        name="basic"
-        form={form}
-        validateMessages={validateMessages}
-        labelCol={{ span: 4 }}
-        wrapperCol={{ span: 18 }}
-        style={{ maxWidth: 600 }}
-        initialValues={data}
-        onFinish={handleFinish}
-        autoComplete="off">
-        <Form.Item<SemesterModel>
-          label="学期名称"
-          name="name"
-          rules={[{ required: true }]}>
-          <Input placeholder="请输入" />
-        </Form.Item>
-
-        <Form.Item<SemesterModel>
-          label="开始时间"
-          name="startTime"
-          dependencies={["endTime"]}
-          rules={[{ required: true }]}>
-          <DatePicker />
-        </Form.Item>
-
-        <Form.Item<SemesterModel>
-          label="结束时间"
-          name="endTime"
-          dependencies={["startTime"]}
-          rules={[
-            { required: true },
-            ({ getFieldValue }) => ({
-              validator() {
-                if (getFieldValue("startTime") < getFieldValue("endTime")) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error("结束时间不能小于开始时间"));
-              },
-            }),
-          ]}>
-          <DatePicker />
-        </Form.Item>
-
-        <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
-          <Button type="primary" className="bg-[#1677ff]" htmlType="submit">
-            提交
-          </Button>
-        </Form.Item>
-      </Form>
+      <div className="flex h-[350px]">
+        <div className="flex-1">
+          <p className="font-bold text-center">当前排期</p>
+          <List
+            bordered
+            className="h-[328px] overflow-y-scroll custom-scrollbar"
+            itemLayout="horizontal"
+            dataSource={data.scheduleList}
+            renderItem={(item) => (
+              <List.Item
+                actions={[
+                  <Button
+                    type="text"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEditItem(item)}></Button>,
+                ]}>
+                <List.Item.Meta
+                  title={
+                    <span>{`${item.begin}-${item.end} ${item.label}`}</span>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        </div>
+        <div className="w-[240px]">
+          <p className="font-bold text-center mb-2">排期设置</p>
+          <Form
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            form={form}
+            validateMessages={validateMessages}
+            name="control-hooks"
+            onFinish={handleFormFinish}
+            style={{ maxWidth: 600 }}>
+            <Form.Item name="type" label="类型">
+              <Radio.Group
+                options={options}
+                onChange={onTypeChange}
+                optionType="button"
+              />
+            </Form.Item>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues.type !== currentValues.type
+              }>
+              {({ getFieldValue }) =>
+                getFieldValue("type") === "0" ? (
+                  <>
+                    <Form.Item
+                      name="customizeGender"
+                      label="课程"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="begin"
+                      label="开始"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="num"
+                      label="节数"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                  </>
+                ) : (
+                  <>
+                    <Form.Item
+                      name="customizeGender"
+                      label="考试"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="begin"
+                      label="开始"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="teachers"
+                      label="监考老师"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="students"
+                      label="考试学生"
+                      rules={[{ required: true }]}>
+                      <Input />
+                    </Form.Item>
+                  </>
+                )
+              }
+            </Form.Item>
+            <Form.Item wrapperCol={{ offset: 7, span: 17 }}>
+              <Space>
+                <Button
+                  className="bg-[#1677ff]"
+                  type="primary"
+                  htmlType="submit">
+                  提交
+                </Button>
+                <Button htmlType="button" onClick={() => form.resetFields()}>
+                  重置
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </div>
+      </div>
+      <div className="text-center mt-4">
+        <Button type="text" icon={<HighlightOutlined />}>
+          保存
+        </Button>
+      </div>
     </Modal>
   );
 });

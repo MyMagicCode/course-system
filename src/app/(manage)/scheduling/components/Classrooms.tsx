@@ -1,4 +1,7 @@
 import { Button, Flex, Tag, Typography } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { ClassroomModal, ClassroomModalRef } from "./ClassroomModal";
+import { useRef } from "react";
 
 const { Text } = Typography;
 
@@ -29,22 +32,36 @@ const dataList: ClassroomType[] = [
 ];
 
 export default function Classrooms() {
+  const ClassroomRef = useRef<ClassroomModalRef>(null);
+
+  const handleEdit = (item: ClassroomType) => {
+    ClassroomRef.current?.open(item);
+  };
+
   return (
-    <Flex rootClassName="mt-5" wrap="wrap" gap="middle">
-      {dataList.map((item) => {
-        return <Classroom key={item.id} value={item}></Classroom>;
-      })}
-    </Flex>
+    <>
+      <Flex rootClassName="mt-5" wrap="wrap" gap="middle">
+        {dataList.map((item) => {
+          return (
+            <Classroom
+              key={item.id}
+              onEdit={handleEdit}
+              value={item}></Classroom>
+          );
+        })}
+      </Flex>
+      <ClassroomModal ref={ClassroomRef}></ClassroomModal>
+    </>
   );
 }
 
-interface ScheduleType {
+export interface ScheduleType {
   label: string;
   begin: string;
   end: string;
 }
 
-interface ClassroomType {
+export interface ClassroomType {
   id: string;
   location: string;
   scheduleList: ScheduleType[];
@@ -52,21 +69,19 @@ interface ClassroomType {
 
 interface ClassroomProps {
   value: ClassroomType;
+  onEdit: (item: ClassroomType) => void;
 }
 
-const colors = ["magenta","red","geekblue","purple","gold","lime","green","volcano","orange","cyan"]
-
-function Classroom({ value }: ClassroomProps) {
+function Classroom({ value, onEdit }: ClassroomProps) {
   const { location, scheduleList } = value;
   return (
-    <div className="w-[200px] h-[260px] p-4 rounded-xl bg-white">
+    <div className="w-[200px] h-[260px] p-4 rounded-xl bg-white shadow-md">
       <Text>{location}</Text>
       <Flex
         gap="4px 0"
-        className="h-[180px] overflow-y-scroll scroll-m-6 custom-scrollbar"
+        className="h-[180px] overflow-y-scroll scroll-m-6 custom-scrollbar content-start"
         wrap="wrap"
-        align="flex-start"
-      >
+        align="flex-start">
         {scheduleList.map(({ begin, end, label }, index) => {
           const format = `${begin}-${end} ${label}`;
           const color = colors[index];
@@ -78,8 +93,24 @@ function Classroom({ value }: ClassroomProps) {
         })}
       </Flex>
       <div className="text-center">
-        <Button type="link">编辑</Button>
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={() => onEdit(value)}></Button>
       </div>
     </div>
   );
 }
+
+const colors = [
+  "magenta",
+  "red",
+  "geekblue",
+  "purple",
+  "gold",
+  "lime",
+  "green",
+  "volcano",
+  "orange",
+  "cyan",
+];
