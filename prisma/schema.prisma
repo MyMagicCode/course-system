@@ -7,10 +7,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 系统用户表模型
 model user {
   id       Int     @id @default(autoincrement())
   account  String  @unique(map: "User_account_key")
   password String  @unique(map: "User_password_key")
   /// 用户名称
   name     String?
+}
+
+// 学期表模型
+model semester {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  label     String
+  beginDate DateTime @db.Date
+  endDate   DateTime @db.Date
+}
+
+// 课程表模型
+model course {
+  id         Int       @id @default(autoincrement())
+  name       String
+  // 描述
+  describe   String
+  // 学分
+  credit     Int
+  // 学时
+  studyHours Int
+  teachers   Teacher[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  exams      Exam[]
+}
+
+// 教师表模型
+model Teacher {
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  name      String
+  age       Int
+  title     Teacher_Title
+  course    course[]
+}
+
+// 学生表模型
+model student {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 考试表模型
+model Exam {
+  id        Int      @id @default(autoincrement())
+  name      String
+  courseId  Int
+  // 考试多少分钟数
+  minutes   Int
+  // 考试地点
+  position  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    course   @relation(fields: [courseId], references: [id])
+}
+
+// 老师头衔字典
+enum Teacher_Title {
+  FORMAL
+  DEPUTY
 }

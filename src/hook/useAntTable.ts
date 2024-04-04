@@ -25,6 +25,7 @@ export function useAntTable<T>(
   (load: Record<string, any>) => void
 ] {
   const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   // 参数信息
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
@@ -37,25 +38,29 @@ export function useAntTable<T>(
 
   // 查询数据的方法
   const fetchData = () => {
+    let flag = true;
     setLoading(true);
-    fetch(`${url}?${objectToParams(getRandomuserParams(tableParams))}`)
+    fetch(`${url}?${objectToParams(getParams(tableParams))}`)
       .then((res) => res.json())
-      .then(({ results }) => {
-        setTableData(results);
+      .then(({ results, total }) => {
         setLoading(false);
+        if (!flag) false;
+        setTableData(results);
         setTableParams({
           ...tableParams,
           pagination: {
             ...tableParams.pagination,
-            total: 200,
-            // 200 is mock data, you should read it from server
-            // total: data.totalCount,
+            total,
           },
         });
       });
+    return () => {
+      flag = false;
+    };
   };
 
   const handleQuery = (load: Record<string, any>) => {
+    load = JSON.parse(JSON.stringify(load));
     setTableParams({
       ...load,
       pagination: {
@@ -63,6 +68,7 @@ export function useAntTable<T>(
         current: 1,
       },
     });
+    setRefresh((r) => !r);
   };
 
   const handleTableChange: TableProps["onChange"] = (pagination) => {
@@ -70,7 +76,7 @@ export function useAntTable<T>(
       ...tableParams,
       pagination,
     });
-
+    setRefresh((r) => !r);
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== tableParams.pagination?.pageSize) {
       setTableData([]);
@@ -78,15 +84,16 @@ export function useAntTable<T>(
   };
 
   useEffect(() => {
-    fetchData();
-  }, [JSON.stringify(tableParams)]);
+    const cancel = fetchData();
+    return () => cancel();
+  }, [refresh]);
 
   return [tableData, tableParams, loading, handleTableChange, handleQuery];
 }
 
-const getRandomuserParams = ({ pagination, ...other }: TableParams) => ({
+const getParams = ({ pagination, ...other }: TableParams) => ({
   ...other,
-  results: pagination?.pageSize,
+  pageSize: pagination?.pageSize,
   page: pagination?.current,
 });
 
