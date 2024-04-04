@@ -1,9 +1,16 @@
 // import { authenticate } from "@/services/authService"
+import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import MD5 from "crypto-js/md5";
+
+const prisma = new PrismaClient();
 
 export const authOptions: AuthOptions = {
+  pages: {
+    signIn: "/auth/signIn",
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -15,14 +22,22 @@ export const authOptions: AuthOptions = {
         if (typeof credentials !== "undefined") {
           // 认证邮件和密码是否正确
           // const res = await authenticate(credentials.email, credentials.password)
-          const user = {
-            username: credentials.username || "zhang",
-            password: credentials.password || "123456",
-            id: "13133",
-            role: "11233",
-          };
-          if (typeof user !== "undefined") {
+          const findUser = await prisma.user.findUnique({
+            where: {
+              account: credentials.username,
+              password: credentials.password,
+            },
+          });
+
+          if (findUser !== null) {
             // 使用Ts的小伙伴需要自己重新声明一下User接口，要么编辑器会提示没有apiToken等其他多余的属性
+            const { name, account, id } = findUser;
+            const user = {
+              id: String(id),
+              name,
+              account,
+              role: "11233",
+            };
             return { ...user };
           } else {
             return null;
@@ -33,12 +48,11 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-  session: { strategy: "jwt", maxAge: 10 * 24 * 60 * 60 },
+  session: { strategy: "jwt", maxAge: 24 * 60 * 60 },
   callbacks: {
     // 设置token
     async jwt({ token, user }) {
       if (user) {
-        token.name = user.username;
         token.role = user.role;
         token.id = user.id;
       }

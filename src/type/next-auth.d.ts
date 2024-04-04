@@ -3,12 +3,9 @@ import "next-auth";
 declare module "next-auth" {
   interface User {
     id: string;
-    password: string;
-    username: string;
+    account: string;
+    name: string | null;
     role: string;
-    // accessToken: string;
-    // refreshToken: string;
-    // accessTokenExpires: number;
   }
 
   interface Session extends DefaultSession {

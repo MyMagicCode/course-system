@@ -1,4 +1,4 @@
-import { PrismaClient } from ".prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({
   log: [
@@ -13,32 +13,9 @@ async function main() {
   await prisma.user.createMany({
     data: [
       {
-        name: "zhang1",
-        email: "1523@email.com",
-      },
-      {
-        name: "wang",
-        email: "144523@email.com",
-      },
-      {
-        name: "li",
-        email: "17823@email.com",
-      },
-      {
-        name: "foo",
-        email: "12963@email.com",
-      },
-      {
-        name: "zhang2",
-        email: "17823@email.com",
-      },
-      {
-        name: "zhang3",
-        email: "112323@email.com",
-      },
-      {
-        name: "zhang4",
-        email: "121333@email.com",
+        name: "admin",
+        account: "admin",
+        password: "0192023a7bbd73250516f069df18b500", // md5加密后数据
       },
     ],
   });

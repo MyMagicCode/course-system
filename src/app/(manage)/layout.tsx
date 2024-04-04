@@ -24,7 +24,7 @@ export default function ManageLayout({ children }: PropsWithChildren) {
           justifyContent: "space-between",
           alignItems: "center",
         }}>
-        <div className="demo-logo">CSS</div>
+        <div className="text-zinc-100 mr-4">CSS</div>
         <div style={{ maxWidth: "600px" }}>
           <Menu
             theme="dark"
@@ -35,8 +35,10 @@ export default function ManageLayout({ children }: PropsWithChildren) {
             style={{ flex: 1, minWidth: 0 }}
           />
         </div>
-        <div className="user-info">
+        <div>
+          <span className="text-zinc-100 mr-4">
           Hi {session?.user?.name}!
+          </span>
           <Button type="primary" color="primary" href="/api/auth/signout">
             退出
           </Button>
