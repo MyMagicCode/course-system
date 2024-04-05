@@ -1,5 +1,5 @@
 "use client";
-import { Button, Form, Input, Space, Table, TableProps } from "antd";
+import { Button, Form, Input, Space, Table, TableProps, Tooltip, message } from "antd";
 import {
   CourseModal,
   CourseModalRef,
@@ -10,13 +10,29 @@ import { useAntTable } from "@/hook/useAntTable";
 
 export default function Course() {
   const CourseModalRef = useRef<CourseModalRef>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [tableData, tableParams, loading, handleTableChange, query] =
-    useAntTable("https://randomuser.me/api");
+    useAntTable("/api/course/list");
 
   const handleEdit = (item: CourseModel) => {
-    console.log("item", item);
     CourseModalRef.current?.open(item);
+  };
+
+  const handleDelete = async (item: CourseModel) => {
+    try {
+      await fetch("/api/course", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: item.id }),
+      });
+      messageApi.success("操作成功");
+      handleQuery({});
+    } catch (error) {
+      messageApi.error("操作失败");
+    }
   };
 
   const columns: TableProps<CourseModel>["columns"] = [
@@ -30,31 +46,46 @@ export default function Course() {
       title: "课程名称",
       dataIndex: "name",
       key: "name",
+      render: (text, record) => (
+        <Tooltip placement="top" title={text}>
+          <div className="truncate">
+            {text}
+          </div>
+        </Tooltip>
+      ),
     },
     {
       title: "简介",
-      dataIndex: "startTime",
-      key: "startTime",
+      dataIndex: "describe",
+      key: "describe",
+      width: 400,
+      render: (text, record) => (
+        <Tooltip placement="top" title={text}>
+          <div className="truncate" style={{width:400}}>
+            {text}
+          </div>
+        </Tooltip>
+      ),
     },
     {
       title: "学分",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "credit",
+      key: "credit",
     },
     {
       title: "学时",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "studyHours",
+      key: "studyHours",
     },
     {
       title: "授课老师",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "teacherName",
+      key: "teacherName",
     },
     {
       title: "助教",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "assistantName",
+      key: "assistantName",
     },
     {
       title: "操作",
@@ -65,7 +96,7 @@ export default function Course() {
           <Button type="link" onClick={() => handleEdit(record)}>
             编辑
           </Button>
-          <Button type="link" danger>
+          <Button type="link" danger onClick={() => handleDelete(record)}>
             删除
           </Button>
         </Space>
@@ -78,11 +109,13 @@ export default function Course() {
   };
   return (
     <>
+      {contextHolder}
       <div className="w-full mt-6 p-5 bg-white rounded-xl">
         <Form
           layout="inline"
           initialValues={{ layout: "inline" }}
-          onFinish={handleQuery}>
+          onFinish={handleQuery}
+        >
           <Form.Item label="课程名称" name="name">
             <Input placeholder="请输入" />
           </Form.Item>
@@ -97,12 +130,13 @@ export default function Course() {
         <Button
           type="primary"
           className="bg-[#1677ff] mb-2"
-          onClick={() => CourseModalRef.current?.open()}>
+          onClick={() => CourseModalRef.current?.open()}
+        >
           添加
         </Button>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={tableData}
           pagination={tableParams.pagination}
           loading={loading}
           rowKey={(record) => "rwo" + record.id}
@@ -110,31 +144,9 @@ export default function Course() {
           onChange={handleTableChange}
         />
       </div>
-      <CourseModal ref={CourseModalRef} />
+      <CourseModal onSubmit={()=>{
+        query({})
+      }} ref={CourseModalRef} />
     </>
   );
 }
-
-const data: CourseModel[] = [
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-10-27",
-    endTime: "2024-12-27",
-    id: "1",
-  },
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-01-27",
-    endTime: "2024-03-27",
-    id: "2",
-  },
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-03-27",
-    endTime: "2024-09-27",
-    id: "3",
-  },
-];

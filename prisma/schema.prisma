@@ -28,29 +28,43 @@ model semester {
 
 // 课程表模型
 model course {
-  id         Int       @id @default(autoincrement())
-  name       String
+  id              Int               @id @default(autoincrement())
+  name            String
   // 描述
-  describe   String
+  describe        String
   // 学分
-  credit     Int
+  credit          Int
   // 学时
-  studyHours Int
-  teachers   Teacher[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  exams      Exam[]
+  studyHours      Int
+  teachers        Teacher[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  // exams           Exam[]
+  courseOnTeacher courseOnTeacher[]
+  Exam            Exam[]
 }
 
 // 教师表模型
 model Teacher {
-  id        Int           @id @default(autoincrement())
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  name      String
-  age       Int
-  title     Teacher_Title
-  course    course[]
+  id              Int               @id @default(autoincrement())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  name            String
+  age             Int
+  title           Teacher_Title
+  // course          course[]
+  courseOnTeacher courseOnTeacher[]
+  course          course?           @relation(fields: [courseId], references: [id])
+  courseId        Int?
+}
+
+model courseOnTeacher {
+  course    course  @relation(fields: [courseId], references: [id])
+  courseId  Int
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+  teacherId Int
+
+  @@id([courseId, teacherId])
 }
 
 // 学生表模型
@@ -63,16 +77,26 @@ model student {
 
 // 考试表模型
 model Exam {
+  id          Int       @id @default(autoincrement())
+  name        String
+  courseId    Int
+  // 考试多少分钟数
+  minutes     Int
+  // 考试地点
+  position    Classroom @relation(fields: [classroomId], references: [id])
+  classroomId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  course      course    @relation(fields: [courseId], references: [id])
+}
+
+// 教室表模型
+model Classroom {
   id        Int      @id @default(autoincrement())
   name      String
-  courseId  Int
-  // 考试多少分钟数
-  minutes   Int
-  // 考试地点
-  position  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  course    course   @relation(fields: [courseId], references: [id])
+  exams     Exam[]
 }
 
 // 老师头衔字典

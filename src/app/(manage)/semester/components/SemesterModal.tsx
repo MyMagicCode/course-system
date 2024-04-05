@@ -1,13 +1,14 @@
-import { Button, DatePicker, Form, FormProps, Input, Modal } from "antd";
+import { useSelectData } from "@/hook/useSelectData";
+import { Button, DatePicker, Form, FormProps, Input, Modal, message } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 export interface SemesterModel {
   code?: string;
   id?: string;
-  name: string;
-  startTime: string;
-  endTime: string;
+  label: string;
+  beginDate: string;
+  endDate: string;
 }
 
 export interface SemesterModalRef {
@@ -16,17 +17,19 @@ export interface SemesterModalRef {
 }
 
 function initData(): SemesterModel {
-  return { name: "", startTime: "", endTime: "" };
+  return { label: "", beginDate: "", endDate: "" };
 }
+
 
 /**
  * 新增和修改学期组件
  */
-export const SemesterModal = forwardRef<SemesterModalRef>((_, ref) => {
+export const SemesterModal = forwardRef<SemesterModalRef, { onSubmit: () => void }>(({ onSubmit }, ref) => {
   const data = initData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
-
+  const [messageApi, contextHolder] = message.useMessage();
+ 
   const isEdit = !!data.id;
 
   // 暴露ref接口控制组件
@@ -38,8 +41,8 @@ export const SemesterModal = forwardRef<SemesterModalRef>((_, ref) => {
           if (item) {
             form.setFieldsValue({
               ...item,
-              endTime: dayjs(item.endTime),
-              startTime: dayjs(item.startTime),
+              endDate: dayjs(item.endDate),
+              beginDate: dayjs(item.beginDate),
             });
           }
           setIsModalOpen(true);
@@ -58,13 +61,26 @@ export const SemesterModal = forwardRef<SemesterModalRef>((_, ref) => {
   };
 
   const handleFinish: FormProps<SemesterModel>["onFinish"] = ({
-    endTime,
-    startTime,
+    endDate,
+    beginDate,
     ...item
   }) => {
-    endTime = (endTime as any).format("YYYY-MM-DD");
-    startTime = (startTime as any).format("YYYY-MM-DD");
-    console.log("item", { ...item, endTime, startTime });
+    endDate = (endDate as any).format("YYYY-MM-DD");
+    beginDate = (beginDate as any).format("YYYY-MM-DD");
+
+    fetch('/api/semester', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...item, endDate, beginDate, }),
+    }).then(res => {
+      onSubmit();
+      messageApi.success("操作成功")
+      handleCancel();
+    }).catch(()=>{
+      messageApi.error("操作失败")
+    });
   };
 
   const validateMessages = {
@@ -78,6 +94,7 @@ export const SemesterModal = forwardRef<SemesterModalRef>((_, ref) => {
       title={isEdit ? "编辑学期" : "新增学期"}
       footer={null}
       open={isModalOpen}>
+        {contextHolder}
       <Form
         name="basic"
         form={form}
@@ -89,29 +106,33 @@ export const SemesterModal = forwardRef<SemesterModalRef>((_, ref) => {
         onFinish={handleFinish}
         autoComplete="off">
         <Form.Item<SemesterModel>
+          hidden
+          name="id"
+        >
+        </Form.Item>
+        <Form.Item<SemesterModel>
           label="学期名称"
-          name="name"
+          name="label"
           rules={[{ required: true }]}>
           <Input placeholder="请输入" />
         </Form.Item>
-
         <Form.Item<SemesterModel>
           label="开始时间"
-          name="startTime"
-          dependencies={["endTime"]}
+          name="beginDate"
+          dependencies={["endDate"]}
           rules={[{ required: true }]}>
           <DatePicker />
         </Form.Item>
 
         <Form.Item<SemesterModel>
           label="结束时间"
-          name="endTime"
-          dependencies={["startTime"]}
+          name="endDate"
+          dependencies={["beginDate"]}
           rules={[
             { required: true },
             ({ getFieldValue }) => ({
               validator() {
-                if (getFieldValue("startTime") < getFieldValue("endTime")) {
+                if (getFieldValue("beginDate") < getFieldValue("endDate")) {
                   return Promise.resolve();
                 }
                 return Promise.reject(new Error("结束时间不能小于开始时间"));

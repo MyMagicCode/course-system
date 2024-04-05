@@ -1,13 +1,16 @@
-import { Button, DatePicker, Form, FormProps, Input, Modal } from "antd";
+import { useSelectData } from "@/hook/useSelectData";
+import { Button, DatePicker, Form, FormProps, Input, InputNumber, Modal, Select, message } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 export interface CourseModel {
-  code?: string;
   id?: string;
+  describe: String;
   name: string;
-  startTime: string;
-  endTime: string;
+  studyHours: string;
+  credit: string;
+  teacherId: string | null;
+  assistantId: string | null;
 }
 
 export interface CourseModalRef {
@@ -16,18 +19,21 @@ export interface CourseModalRef {
 }
 
 function initData(): CourseModel {
-  return { name: "", startTime: "", endTime: "" };
+  return { name: "", describe: "", teacherId: null, assistantId: null, studyHours: "", credit: "" };
 }
+
+const fieldNames = { label: "name", value: "id" }
 
 /**
  * 新增和修改课程组件
  */
-export const CourseModal = forwardRef<CourseModalRef>((_, ref) => {
+export const CourseModal = forwardRef<CourseModalRef, { onSubmit: () => void }>(({onSubmit}, ref) => {
   const data = initData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
-
-  const isEdit = !!data.id;
+  const [messageApi, contextHolder] = message.useMessage();
+  const assistants = useSelectData("assistants")
+  const teachers = useSelectData("teachers")
 
   // 暴露ref接口控制组件
   useImperativeHandle(
@@ -38,8 +44,6 @@ export const CourseModal = forwardRef<CourseModalRef>((_, ref) => {
           if (item) {
             form.setFieldsValue({
               ...item,
-              endTime: dayjs(item.endTime),
-              startTime: dayjs(item.startTime),
             });
           }
           setIsModalOpen(true);
@@ -57,14 +61,22 @@ export const CourseModal = forwardRef<CourseModalRef>((_, ref) => {
     form.resetFields();
   };
 
-  const handleFinish: FormProps<CourseModel>["onFinish"] = ({
-    endTime,
-    startTime,
-    ...item
-  }) => {
-    endTime = (endTime as any).format("YYYY-MM-DD");
-    startTime = (startTime as any).format("YYYY-MM-DD");
-    console.log("item", { ...item, endTime, startTime });
+  const handleFinish: FormProps<CourseModel>["onFinish"] = (item
+  ) => {
+    fetch('/api/course', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...item}),
+    }).then(res => {
+      onSubmit();
+      messageApi.success("操作成功")
+      handleCancel();
+    }).catch(()=>{
+      messageApi.error("操作失败")
+    });
+    console.log("item", { ...item });
   };
 
   const validateMessages = {
@@ -75,9 +87,10 @@ export const CourseModal = forwardRef<CourseModalRef>((_, ref) => {
     <Modal
       centered
       onCancel={handleCancel}
-      title={isEdit ? "编辑课程" : "新增课程"}
+      title={"课程信息"}
       footer={null}
       open={isModalOpen}>
+        {contextHolder}
       <Form
         name="basic"
         form={form}
@@ -89,6 +102,11 @@ export const CourseModal = forwardRef<CourseModalRef>((_, ref) => {
         onFinish={handleFinish}
         autoComplete="off">
         <Form.Item<CourseModel>
+          hidden
+          name="id"
+        >
+        </Form.Item>
+        <Form.Item<CourseModel>
           label="课程名称"
           name="name"
           rules={[{ required: true }]}>
@@ -96,29 +114,46 @@ export const CourseModal = forwardRef<CourseModalRef>((_, ref) => {
         </Form.Item>
 
         <Form.Item<CourseModel>
-          label="开始时间"
-          name="startTime"
-          dependencies={["endTime"]}
+          label="简介"
+          name="describe"
           rules={[{ required: true }]}>
-          <DatePicker />
+          <Input.TextArea rows={4} placeholder="请输入" />
         </Form.Item>
 
         <Form.Item<CourseModel>
-          label="结束时间"
-          name="endTime"
-          dependencies={["startTime"]}
-          rules={[
-            { required: true },
-            ({ getFieldValue }) => ({
-              validator() {
-                if (getFieldValue("startTime") < getFieldValue("endTime")) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error("结束时间不能小于开始时间"));
-              },
-            }),
-          ]}>
-          <DatePicker />
+          label="学分"
+          name="credit"
+          rules={[{ required: true }]}>
+          <InputNumber min={0}  style={{ width: '100%' }}  placeholder="请输入" />
+        </Form.Item>
+
+        <Form.Item<CourseModel>
+          label="学时"
+          name="studyHours"
+          rules={[{ required: true }]}>
+          <InputNumber min={1}  style={{ width: '100%' }}  placeholder="请输入" />
+        </Form.Item>
+
+        <Form.Item<CourseModel>
+          label="任课老师"
+          name="teacherId"
+          rules={[{ required: true }]}>
+          <Select
+            options={teachers}
+            fieldNames={fieldNames}
+            placeholder="请选择"
+          />
+        </Form.Item>
+        <Form.Item<CourseModel>
+          label="助教"
+          name="assistantId"
+          >
+          <Select
+            options={assistants}
+            fieldNames={fieldNames}
+            placeholder="请选择"
+            allowClear
+          />
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 10, span: 14 }}>

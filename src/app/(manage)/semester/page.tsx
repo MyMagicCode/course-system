@@ -1,5 +1,5 @@
 "use client";
-import { Button, Form, Input, Space, Table, TableProps } from "antd";
+import { Button, Form, Input, Space, Table, TableProps, message } from "antd";
 import {
   SemesterModal,
   SemesterModalRef,
@@ -10,14 +10,30 @@ import { useAntTable } from "@/hook/useAntTable";
 
 export default function Semester() {
   const semesterModalRef = useRef<SemesterModalRef>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [tableData, tableParams, loading, handleTableChange, query] =
-    useAntTable("https://randomuser.me/api");
+    useAntTable("/api/semester/list");
 
   const handleEdit = (item: SemesterModel) => {
-    console.log("item", item);
     semesterModalRef.current?.open(item);
   };
+
+  const handleDelete = async (item: SemesterModel)=>{
+    try {
+      await fetch('/api/semester', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id:item.id }),
+      })
+      messageApi.success("操作成功")
+      handleQuery({})
+    } catch (error) {
+      messageApi.error("操作失败")
+    }
+  }
 
   const columns: TableProps<SemesterModel>["columns"] = [
     {
@@ -27,25 +43,25 @@ export default function Semester() {
       render: (_, __, index) => <a>{index + 1}</a>,
     },
     {
-      title: "学期编号",
-      dataIndex: "code",
-      key: "code",
-      render: (text) => <a>{text}</a>,
-    },
-    {
       title: "学期名称",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "label",
+      key: "label",
     },
     {
       title: "开始时间",
-      dataIndex: "startTime",
-      key: "startTime",
+      dataIndex: "beginDate",
+      key: "beginDate",
     },
     {
       title: "结束时间",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "endDate",
+      key: "endDate",
+    },
+    {
+      title: "创建事件",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => <a>{text}</a>,
     },
     {
       title: "操作",
@@ -56,7 +72,7 @@ export default function Semester() {
           <Button type="link" onClick={() => handleEdit(record)}>
             编辑
           </Button>
-          <Button type="link" danger>
+          <Button type="link" danger onClick={()=>handleDelete(record)}>
             删除
           </Button>
         </Space>
@@ -69,12 +85,13 @@ export default function Semester() {
   };
   return (
     <>
+        {contextHolder}
       <div className="w-full mt-6 p-5 bg-white rounded-xl">
         <Form
           layout="inline"
           initialValues={{ layout: "inline" }}
           onFinish={handleQuery}>
-          <Form.Item label="学期名称" name="name">
+          <Form.Item label="学期名称" name="label">
             <Input placeholder="请输入" />
           </Form.Item>
           <Form.Item>
@@ -93,7 +110,7 @@ export default function Semester() {
         </Button>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={tableData}
           pagination={tableParams.pagination}
           loading={loading}
           rowKey={(record) => "rwo" + record.id}
@@ -101,31 +118,11 @@ export default function Semester() {
           onChange={handleTableChange}
         />
       </div>
-      <SemesterModal ref={semesterModalRef} />
+      <SemesterModal onSubmit={()=>{
+        console.log("object");
+        query({})
+      }} ref={semesterModalRef} />
     </>
   );
 }
 
-const data: SemesterModel[] = [
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-10-27",
-    endTime: "2024-12-27",
-    id: "1",
-  },
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-01-27",
-    endTime: "2024-03-27",
-    id: "2",
-  },
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-03-27",
-    endTime: "2024-09-27",
-    id: "3",
-  },
-];
