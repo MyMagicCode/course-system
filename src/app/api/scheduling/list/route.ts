@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     name,
   } = Object.fromEntries(searchParams);
 
-  const [list, meta] = await prisma.exam
+  const [list, meta] = await prisma.classroom
     .paginate({
       where: {
         name: {
@@ -22,11 +22,10 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        position: true,
-        course: true,
+        Schedules: true,
       },
       orderBy: {
-        updatedAt: "desc",
+        name: "asc",
       },
     })
     .withPages({
@@ -36,11 +35,9 @@ export async function GET(request: NextRequest) {
     });
 
   const data = {
-    results: list.map(({ createdAt, position, course, ...other }) => {
+    results: list.map(({ createdAt, ...other }) => {
       return {
         ...other,
-        position: position.name,
-        courseName: course.name,
         createdAt: dayjs(createdAt).format("YYYY-MM-DD HH:mm:ss"),
       };
     }),

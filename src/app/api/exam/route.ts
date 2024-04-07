@@ -6,12 +6,13 @@ import dayjs from "dayjs";
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
-  const { id, label, endDate, beginDate } = await req.json();
+  const { id, name, courseId, classroomId, minutes } = await req.json();
 
   const data = {
-    label,
-    endDate: new Date(endDate),
-    beginDate: new Date(beginDate),
+    name,
+    courseId,
+    classroomId,
+    minutes,
   };
   const res = {
     status: 200,
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
   try {
     if (id) {
       // 修改数据
-      await prisma.semester.update({
+      await prisma.exam.update({
         where: {
           id,
         },
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
       });
     } else {
       // 新增数据
-      await prisma.semester.create({
+      await prisma.exam.create({
         data,
       });
     }
@@ -54,7 +55,7 @@ export async function DELETE(req: Request) {
     });
 
   try {
-    await prisma.semester.delete({
+    await prisma.exam.delete({
       where: {
         id,
       },

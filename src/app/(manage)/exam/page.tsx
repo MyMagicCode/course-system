@@ -1,18 +1,35 @@
 "use client";
-import { Button, Form, Input, Space, Table, TableProps } from "antd";
+import { Button, Form, Input, Space, Table, TableProps, message } from "antd";
 import { ExamModal, ExamModalRef, ExamModel } from "./components/ExamModal";
 import { useRef } from "react";
 import { useAntTable } from "@/hook/useAntTable";
 
 export default function Exam() {
   const ExamModalRef = useRef<ExamModalRef>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [tableData, tableParams, loading, handleTableChange, query] =
-    useAntTable("https://randomuser.me/api");
+    useAntTable("/api/exam/list");
 
   const handleEdit = (item: ExamModel) => {
     console.log("item", item);
     ExamModalRef.current?.open(item);
+  };
+
+  const handleDelete = async (item: ExamModel) => {
+    try {
+      await fetch("/api/exam", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: item.id }),
+      });
+      messageApi.success("操作成功");
+      handleQuery({});
+    } catch (error) {
+      messageApi.error("操作失败");
+    }
   };
 
   const columns: TableProps<ExamModel>["columns"] = [
@@ -29,18 +46,18 @@ export default function Exam() {
     },
     {
       title: "考试科目",
-      dataIndex: "startTime",
-      key: "startTime",
+      dataIndex: "courseName",
+      key: "courseName",
     },
     {
       title: "考试时间",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "minutes",
+      key: "minutes",
     },
     {
       title: "地点",
-      dataIndex: "endTime",
-      key: "endTime",
+      dataIndex: "position",
+      key: "position",
     },
     {
       title: "操作",
@@ -51,7 +68,7 @@ export default function Exam() {
           <Button type="link" onClick={() => handleEdit(record)}>
             编辑
           </Button>
-          <Button type="link" danger>
+          <Button type="link" danger onClick={() => handleDelete(record)}>
             删除
           </Button>
         </Space>
@@ -64,6 +81,7 @@ export default function Exam() {
   };
   return (
     <>
+      {contextHolder}
       <div className="w-full mt-6 p-5 bg-white rounded-xl">
         <Form
           layout="inline"
@@ -88,7 +106,7 @@ export default function Exam() {
         </Button>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={tableData}
           pagination={tableParams.pagination}
           loading={loading}
           rowKey={(record) => "rwo" + record.id}
@@ -96,31 +114,7 @@ export default function Exam() {
           onChange={handleTableChange}
         />
       </div>
-      <ExamModal ref={ExamModalRef} />
+      <ExamModal onSubmit={() => query({})} ref={ExamModalRef} />
     </>
   );
 }
-
-const data: ExamModel[] = [
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-10-27",
-    endTime: "2024-12-27",
-    id: "1",
-  },
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-01-27",
-    endTime: "2024-03-27",
-    id: "2",
-  },
-  {
-    code: "XQ.123123131",
-    name: "John Brown",
-    startTime: "2024-03-27",
-    endTime: "2024-09-27",
-    id: "3",
-  },
-];

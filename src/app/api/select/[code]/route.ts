@@ -30,4 +30,6 @@ const selector = {
         title: "DEPUTY",
       },
     }),
+  classrooms: () => prisma.classroom.findMany({}),
+  courseList: () => prisma.course.findMany(),
 };
