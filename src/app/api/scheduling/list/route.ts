@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { pagination } from "prisma-extension-pagination";
 import dayjs from "dayjs";
+import { groupByArray } from "@/utils/tools";
 
 const prisma = new PrismaClient().$extends(pagination());
 
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
     pageSize = "10",
     page = "1",
     name,
+    date,
   } = Object.fromEntries(searchParams);
 
   const [list, meta] = await prisma.classroom
@@ -22,7 +24,14 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        Schedules: true,
+        Schedules: {
+          include: {
+            course: true,
+          },
+          where: {
+            whenDay: new Date(date),
+          },
+        },
       },
       orderBy: {
         name: "asc",
@@ -35,9 +44,22 @@ export async function GET(request: NextRequest) {
     });
 
   const data = {
-    results: list.map(({ createdAt, ...other }) => {
+    results: list.map(({ createdAt, Schedules, ...other }) => {
+      const scheduleList = groupByArray(
+        Schedules,
+        (item) => item.courseBegin
+      )[0].map((item) => {
+        const { course, ...other2 } = item[0];
+        return {
+          ...other2,
+          courseName: course?.name,
+          num: item.length,
+        };
+      });
       return {
         ...other,
+        scheduleList,
+        whenDay: date,
         createdAt: dayjs(createdAt).format("YYYY-MM-DD HH:mm:ss"),
       };
     }),

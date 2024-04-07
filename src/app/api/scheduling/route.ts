@@ -22,7 +22,11 @@ type SchedulesCreateManyInput = {
 };
 
 export async function POST(req: Request) {
-  const { id, scheduleList = [] } = (await req.json()) as ClassroomType;
+  const {
+    id,
+    whenDay,
+    scheduleList = [],
+  } = (await req.json()) as ClassroomType;
 
   const res = {
     status: 200,
@@ -51,6 +55,7 @@ export async function POST(req: Request) {
     const cleanUp = prisma.schedules.deleteMany({
       where: {
         classroomId: id!,
+        whenDay: new Date(whenDay),
       },
     });
 

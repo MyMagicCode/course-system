@@ -16,7 +16,8 @@ type TableParams = {
  * @returns [数据列表，请求参数，加载状态，表格onChange回调，查询方法]
  */
 export function useAntTable<T>(
-  url: string
+  url: string,
+  payload = {} as Record<string, any>
 ): [
   T[],
   TableParams,
@@ -28,6 +29,7 @@ export function useAntTable<T>(
   const [refresh, setRefresh] = useState(false);
   // 参数信息
   const [tableParams, setTableParams] = useState<TableParams>({
+    ...payload,
     pagination: {
       current: 1,
       pageSize: 10,

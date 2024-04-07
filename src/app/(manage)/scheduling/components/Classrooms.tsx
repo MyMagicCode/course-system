@@ -7,9 +7,10 @@ const { Text } = Typography;
 
 interface ClassroomsProps {
   list: ClassroomType[];
+  onRefresh: ()=>void;
 }
 
-export default function Classrooms({ list }: ClassroomsProps) {
+export default function Classrooms({ list,onRefresh }: ClassroomsProps) {
   const ClassroomRef = useRef<ClassroomModalRef>(null);
 
   const handleEdit = (item: ClassroomType) => {
@@ -28,7 +29,7 @@ export default function Classrooms({ list }: ClassroomsProps) {
           );
         })}
       </Flex>
-      <ClassroomModal ref={ClassroomRef}></ClassroomModal>
+      <ClassroomModal onSubmit={onRefresh} ref={ClassroomRef}></ClassroomModal>
     </>
   );
 }
@@ -49,6 +50,7 @@ export interface ScheduleType {
 export interface ClassroomType {
   id: null;
   name: string;
+  whenDay: string;
   scheduleList?: ScheduleType[];
 }
 
@@ -69,7 +71,15 @@ function Classroom({ value, onEdit }: ClassroomProps) {
           wrap="wrap"
           align="flex-start">
           {scheduleList?.map((item, index) => {
-            const format = "${begin}-${end} ${label}";
+             // 格式化显示样式
+             let format = "";
+             if (item.type === "COURSE") {
+               format = `${item.courseName}(${item.courseBegin}-${
+                 item.courseBegin! + item.num! - 1
+               })`;
+             } else {
+               format = `课程`;
+             }
             const color = colors[index];
             return (
               <Tag key={"t" + item.type + index} color={color}>

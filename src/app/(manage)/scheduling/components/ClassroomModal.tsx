@@ -31,6 +31,7 @@ function initData(): ClassroomType {
   return {
     id: null,
     name: "",
+    whenDay:"",
     scheduleList: [],
   };
 }
@@ -113,7 +114,6 @@ export const ClassroomModal = forwardRef<
   };
 
   const handleEditItem = (item: ScheduleType) => {
-    console.log("item", item);
     form.setFieldsValue(item);
   };
 
@@ -130,7 +130,7 @@ export const ClassroomModal = forwardRef<
   }) => {
     const { scheduleList = [], ...other } = data;
     item.courseName = courseList.find((it) => it.id === item.courseId).name;
-    item.whenDay = dayjs().format("YYYY-MM-DD");
+    item.whenDay = data.whenDay;
     setData({
       ...other,
       scheduleList: [...scheduleList, item],
@@ -194,6 +194,7 @@ export const ClassroomModal = forwardRef<
       footer={null}
       width={600}
       open={isModalOpen}>
+        {contextHolder}
       <div className="flex h-[350px]">
         <div className="flex-1">
           <p className="font-bold text-center">当前排期</p>
