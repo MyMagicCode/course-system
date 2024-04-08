@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import MD5 from "crypto-js/md5";
 
 const prisma = new PrismaClient();
 
@@ -31,12 +30,12 @@ export const authOptions: AuthOptions = {
 
           if (findUser !== null) {
             // 使用Ts的小伙伴需要自己重新声明一下User接口，要么编辑器会提示没有apiToken等其他多余的属性
-            const { name, account, id } = findUser;
+            const { name, account, id, role } = findUser;
             const user = {
               id: String(id),
               name,
               account,
-              role: "11233",
+              role,
             };
             return { ...user };
           } else {

@@ -9,11 +9,19 @@ datasource db {
 
 // 系统用户表模型
 model user {
-  id       Int     @id @default(autoincrement())
-  account  String  @unique(map: "User_account_key")
-  password String  @unique(map: "User_password_key")
+  id        Int      @id @default(autoincrement())
+  account   String   @unique(map: "User_account_key")
+  password  String
+  role      Role
   /// 用户名称
-  name     String?
+  name      String?
+  teacherId Int?     @unique
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  TEACHER
 }
 
 // 学期表模型
@@ -57,6 +65,7 @@ model Teacher {
   courseOnTeacher courseOnTeacher[]
   course          course?           @relation(fields: [courseId], references: [id])
   courseId        Int?
+  user            user?
 }
 
 model courseOnTeacher {

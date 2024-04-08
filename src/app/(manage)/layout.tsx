@@ -24,7 +24,7 @@ export default function ManageLayout({ children }: PropsWithChildren) {
           justifyContent: "space-between",
           alignItems: "center",
         }}>
-        <div className="text-zinc-100 mr-4">CSS</div>
+        <div className="text-zinc-100 mr-4">排课系统</div>
         <div style={{ maxWidth: "600px" }}>
           <Menu
             theme="dark"

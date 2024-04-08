@@ -1,11 +1,18 @@
-import { MiddlewareConfig } from "next/dist/build/analysis/get-page-static-info";
-import { NextResponse } from "next/server";
+import { withAuth } from "next-auth/middleware";
 
-export function middleware(req: Request) {
-  return NextResponse.redirect(new URL("/home", req.url));
-}
+export default withAuth(
+  // `withAuth` augments your `Request` with the user's token.
+  function middleware(req) {
+    console.log(req.nextauth.token);
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        if (req.nextUrl.pathname === "/auth/signIn") return true;
+        return !!token?.role;
+      },
+    },
+  }
+);
 
-// 设置匹配路径
-export const config = {
-  matcher: "/about/:path*",
-};
+export const config = { matcher: ["/:path*"] };
