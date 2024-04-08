@@ -2,6 +2,7 @@ import { Button, Flex, Tag, Typography } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { ClassroomModal, ClassroomModalRef } from "./ClassroomModal";
 import { useRef } from "react";
+import { Dayjs } from "dayjs";
 
 const { Text } = Typography;
 
@@ -44,8 +45,12 @@ export interface ScheduleType {
   courseBegin?: number;
   whenDay: string;
   num?: number;
-  examBegin?: string;
+  examBegin?: string | Dayjs;
   examEnd?: string;
+  examName?: string;
+  teacherIds?: string | number[];
+  studentIds?: string | number[];
+  minutes?: number;
 }
 
 export interface ClassroomType {
@@ -79,7 +84,7 @@ function Classroom({ value, onEdit }: ClassroomProps) {
                 item.courseBegin! + item.num! - 1
               })`;
             } else {
-              format = `课程`;
+              format = `${item.examName}(${item.examBegin}-${item.examEnd})`;
             }
             const color = colors[index];
             return (

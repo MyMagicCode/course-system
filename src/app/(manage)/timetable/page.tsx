@@ -11,34 +11,8 @@ interface TimetableItem {
   content: string;
 }
 
-const data: TimetableItem[] = [
-  {
-    whenDay: "2024-04-03",
-    courseBegin: "2",
-    num: "2",
-    content: "Java程序设计@A栋5013(2-3)",
-  },
-  {
-    whenDay: "2024-04-03",
-    courseBegin: "4",
-    num: "2",
-    content: "大数据与开发@A栋5013(2-3)",
-  },
-  {
-    whenDay: "2024-04-03",
-    courseBegin: "8",
-    num: "2",
-    content: "时事政治@A栋5013(2-3)",
-  },
-  {
-    whenDay: "2024-04-04",
-    courseBegin: "1",
-    num: "3",
-    content: "Java程序设计@A栋4003(2-3)",
-  },
-];
-
 export default function Timetable() {
+  const [form] = Form.useForm();
   const [dataList, , loading, , query] = useAntTable<TimetableItem>(
     "/api/timetable/list",
     {
@@ -92,14 +66,16 @@ export default function Timetable() {
     <>
       <div className="w-full mt-6 p-5 bg-white rounded-xl">
         <Form
+          form={form}
           layout="inline"
           initialValues={{ date: dayjs() }}
           onFinish={handleQuery}>
           <Form.Item label="日期" name="date">
-            <DatePicker placeholder="请输入" picker="week" />
-          </Form.Item>
-          <Form.Item label="学期名称" name="name">
-            <Input placeholder="请输入" />
+            <DatePicker
+              onChange={() => form.submit()}
+              placeholder="请输入"
+              picker="week"
+            />
           </Form.Item>
           <Form.Item>
             <Button type="primary" className="bg-[#1677ff]" htmlType="submit">

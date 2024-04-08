@@ -18,19 +18,25 @@ export async function GET(req: Request, { params }: { params: Params }) {
 }
 
 const selector = {
+  // 正式老师列表
   teachers: () =>
     prisma.teacher.findMany({
       where: {
         title: "FORMAL",
       },
     }),
+  // 助教老师列表
   assistants: () =>
     prisma.teacher.findMany({
       where: {
         title: "DEPUTY",
       },
     }),
+  // 所有老师列表
+  allTeachers: () => prisma.teacher.findMany(),
+  // 教室列表
   classrooms: () => prisma.classroom.findMany({}),
+  // 课程列表
   courseList: () =>
     prisma.course
       .findMany({
@@ -53,4 +59,8 @@ const selector = {
           };
         });
       }),
+  // 考试列表
+  examList: () => prisma.exam.findMany(),
+  // 学生列表
+  studentList: () => prisma.student.findMany(),
 };

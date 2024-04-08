@@ -15,11 +15,11 @@ type SchedulesCreateManyInput = {
   whenDay: Date | string;
   courseBegin?: number | null;
   courseNum?: number | null;
-  examBegin?: Date | string | null;
-  examEnd?: Date | string | null;
+  examBegin?: string | null;
+  examEnd?: string | null;
   teacherIds?: string | null;
   studentIds?: string | null;
-  teacherId: number;
+  teacherId?: number;
 };
 
 export async function POST(req: Request) {
@@ -37,7 +37,19 @@ export async function POST(req: Request) {
   const list: SchedulesCreateManyInput[] = [];
 
   scheduleList.forEach((item) => {
-    const { type, courseBegin = 1, courseId, num, whenDay, teacherId } = item;
+    const {
+      type,
+      courseBegin = 1,
+      courseId,
+      num,
+      whenDay,
+      teacherId,
+      examBegin,
+      examEnd,
+      examId,
+      teacherIds,
+      studentIds,
+    } = item;
     if (type === "COURSE") {
       for (let i = 0; i < num!; i++) {
         list.push({
@@ -50,6 +62,17 @@ export async function POST(req: Request) {
           courseNum: courseBegin + i,
         });
       }
+    } else if (type === "EXAM") {
+      list.push({
+        type,
+        classroomId: id!,
+        whenDay: new Date(whenDay),
+        examBegin: examBegin as string,
+        examEnd,
+        examId,
+        teacherIds: teacherIds as string,
+        studentIds: studentIds as string,
+      });
     }
   });
 
@@ -67,6 +90,7 @@ export async function POST(req: Request) {
 
     await prisma.$transaction([cleanUp, add]);
   } catch (error: any) {
+    console.log(error);
     res.status = 400;
     res.msg = JSON.stringify(error);
   }

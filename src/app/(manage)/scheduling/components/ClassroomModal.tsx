@@ -10,9 +10,10 @@ import {
   Select,
   SelectProps,
   Space,
+  TimePicker,
   message,
 } from "antd";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import {
   EditOutlined,
   HighlightOutlined,
@@ -74,12 +75,16 @@ export const ClassroomModal = forwardRef<
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const courseList = useSelectData("courseList");
+  const allTeachers = useSelectData("allTeachers");
+  const examList = useSelectData("examList");
+  const studentList = useSelectData("studentList");
   const [messageApi, contextHolder] = message.useMessage();
   const editIndex = useRef<number | null>(null);
 
   // 修改状态
   const { scheduleList } = data;
   scheduleList?.forEach((item) => {
+    if (item.type === "EXAM") return;
     const initialIndex = item.courseBegin! - 1;
     for (let i = 0; i < item.num!; i++) {
       beginNumOptions[initialIndex + i].disabled = true;
@@ -112,12 +117,21 @@ export const ClassroomModal = forwardRef<
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    editIndex.current = null;
     form.resetFields();
   };
 
-  const handleEditItem = (item: ScheduleType, index: number) => {
+  const handleEditItem = ({ ...item }: ScheduleType, index: number) => {
+    if (item.type === "EXAM") {
+      item.teacherIds = (item.teacherIds as string)
+        .split(",")
+        .map((it) => parseInt(it));
+      item.studentIds = (item.studentIds as string)
+        .split(",")
+        .map((it) => parseInt(it));
+      item.examBegin = dayjs(item.examBegin, "HH:mm");
+    }
     editIndex.current = index;
-    console.log("editIndex", editIndex);
     form.setFieldsValue(item);
   };
   // 删除排期项
@@ -132,9 +146,23 @@ export const ClassroomModal = forwardRef<
   /** 添加排期项 */
   const handleFormFinish: FormProps<ScheduleType>["onFinish"] = (item) => {
     const { scheduleList = [], ...other } = data;
-    item.courseName = courseList.find((it) => it.id === item.courseId).name;
-    item.teacherId = courseList.find((it) => it.id === item.courseId).teacherId;
     item.whenDay = data.whenDay;
+    if (item.type === "COURSE") {
+      // 处理课程排期相关逻辑
+      item.courseName = courseList.find((it) => it.id === item.courseId).name;
+      item.teacherId = courseList.find(
+        (it) => it.id === item.courseId
+      ).teacherId;
+    } else {
+      // 处理考试排期逻辑
+      item.studentIds = (item.studentIds as number[]).join();
+      item.teacherIds = (item.teacherIds as number[]).join();
+      const beginTime = item.examBegin as any as Dayjs;
+      item.examBegin = beginTime.format("HH:mm");
+      item.examEnd = beginTime
+        .add(item.minutes || 0, "minutes")
+        .format("HH:mm");
+    }
 
     // editIndex有值为编辑
     if (editIndex.current !== null) {
@@ -236,7 +264,7 @@ export const ClassroomModal = forwardRef<
                   item.courseBegin! + item.num! - 1
                 })`;
               } else {
-                format = `课程`;
+                format = `${item.examName}(${item.examBegin}-${item.examEnd})`;
               }
               return (
                 <List.Item style={{ padding: "10px 12px" }}>
@@ -334,27 +362,49 @@ export const ClassroomModal = forwardRef<
                   <>
                     <Form.Item
                       name="examId"
-                      label="考试"
+                      label="考试名称"
                       rules={[{ required: true }]}>
-                      <Input />
+                      <Select
+                        options={examList}
+                        fieldNames={fieldNames}
+                        placeholder="请选择"
+                        onChange={(_, value) => {
+                          form.setFieldValue("minutes", value.minutes);
+                          form.setFieldValue("examName", value.name);
+                        }}
+                      />
                     </Form.Item>
+                    <Form.Item name="minutes" hidden></Form.Item>
+                    <Form.Item name="examName" hidden></Form.Item>
                     <Form.Item
                       name="examBegin"
-                      label="开始"
+                      label="开始时间"
                       rules={[{ required: true }]}>
-                      <Input />
+                      <TimePicker className="w-full" format="HH:mm" />
                     </Form.Item>
                     <Form.Item
                       name="teacherIds"
                       label="监考老师"
                       rules={[{ required: true }]}>
-                      <Input />
+                      <Select
+                        mode="multiple"
+                        maxTagCount={1}
+                        options={allTeachers}
+                        fieldNames={fieldNames}
+                        placeholder="请选择"
+                      />
                     </Form.Item>
                     <Form.Item
                       name="studentIds"
                       label="考试学生"
                       rules={[{ required: true }]}>
-                      <Input />
+                      <Select
+                        mode="multiple"
+                        maxTagCount={1}
+                        options={studentList}
+                        fieldNames={fieldNames}
+                        placeholder="请选择"
+                      />
                     </Form.Item>
                   </>
                 )

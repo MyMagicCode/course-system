@@ -6,22 +6,24 @@ import dayjs from "dayjs";
 import { useCallback, useEffect } from "react";
 
 export default function Scheduling() {
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
   const [dataList, tableParams, loading, handleTableChange, query] =
-    useAntTable<ClassroomType>("/api/scheduling/list",{date:dayjs().format("YYYY-MM-DD")});
+    useAntTable<ClassroomType>("/api/scheduling/list", {
+      date: dayjs().format("YYYY-MM-DD"),
+    });
 
-  useEffect(()=>{
-    handleQuery(form.getFieldsValue())
-  },[])
+  useEffect(() => {
+    handleQuery(form.getFieldsValue());
+  }, []);
 
   const handleQuery = (fromData: any) => {
-    fromData.date = fromData.date?.format("YYYY-MM-DD")
+    fromData.date = fromData.date?.format("YYYY-MM-DD");
     query({ ...fromData });
   };
 
-  const handleRefresh = useCallback(()=>{
-    handleQuery(form.getFieldsValue())
-  },[query])
+  const handleRefresh = useCallback(() => {
+    handleQuery(form.getFieldsValue());
+  }, [query]);
 
   return (
     <>
@@ -30,10 +32,9 @@ export default function Scheduling() {
           form={form}
           layout="inline"
           initialValues={{ date: dayjs() }}
-          onFinish={handleQuery}
-        >
+          onFinish={handleQuery}>
           <Form.Item label="日期" name="date">
-            <DatePicker placeholder="请输入" />
+            <DatePicker placeholder="请输入" onChange={() => form.submit()} />
           </Form.Item>
           <Form.Item label="教室名称" name="name">
             <Input allowClear placeholder="请输入" />

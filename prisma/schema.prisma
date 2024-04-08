@@ -112,15 +112,15 @@ model Schedules {
   // 排期的日期
   whenDay     DateTime       @db.Date
   // 授课老师
-  teacherId   Int
+  teacherId   Int?
   // 课程开始是第几节
   courseBegin Int?
   // 第几节课
   courseNum   Int?
   // 考试开始时间
-  examBegin   DateTime?
+  examBegin   String?
   // 考试结束时间
-  examEnd     DateTime?
+  examEnd     String?
   // 监考老师
   teacherIds  String?        @db.Text
   // 考试学生
@@ -130,6 +130,7 @@ model Schedules {
   course      course?        @relation(fields: [courseId], references: [id])
 
   @@unique([whenDay, courseNum, teacherId])
+  @@unique([whenDay, courseNum])
 }
 
 enum Schedules_Type {

@@ -1,5 +1,6 @@
 "use client";
 import { SessionProvider } from "next-auth/react";
+import { StyleProvider } from "@ant-design/cssinjs";
 import locale from "antd/locale/zh_CN";
 import dayjs from "dayjs";
 
@@ -9,8 +10,10 @@ dayjs.locale("zh-cn");
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ConfigProvider locale={locale}>
-      <SessionProvider>{children}</SessionProvider>;
-    </ConfigProvider>
+    <StyleProvider hashPriority="high">
+      <ConfigProvider locale={locale}>
+        <SessionProvider>{children}</SessionProvider>;
+      </ConfigProvider>
+    </StyleProvider>
   );
 }

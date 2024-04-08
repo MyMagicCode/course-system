@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import dayjs from "dayjs";
 import { groupByArray } from "@/utils/tools";
 
-const prisma = new PrismaClient({ log: ["query", "info", "warn", "error"] });
+const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

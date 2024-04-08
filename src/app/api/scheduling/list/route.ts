@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         Schedules: {
           include: {
             course: true,
+            exam: true,
           },
           where: {
             whenDay: new Date(date),
@@ -47,12 +48,13 @@ export async function GET(request: NextRequest) {
     results: list.map(({ createdAt, Schedules, ...other }) => {
       const scheduleList = groupByArray(
         Schedules,
-        (item) => item.courseBegin
+        (item) => item.courseBegin || item.examBegin! + item.examEnd
       )[0].map((item) => {
-        const { course, ...other2 } = item[0];
+        const { course, exam, ...other2 } = item[0];
         return {
           ...other2,
           courseName: course?.name,
+          examName: exam?.name,
           num: item.length,
         };
       });
