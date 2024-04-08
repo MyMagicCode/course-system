@@ -7,10 +7,10 @@ const { Text } = Typography;
 
 interface ClassroomsProps {
   list: ClassroomType[];
-  onRefresh: ()=>void;
+  onRefresh: () => void;
 }
 
-export default function Classrooms({ list,onRefresh }: ClassroomsProps) {
+export default function Classrooms({ list, onRefresh }: ClassroomsProps) {
   const ClassroomRef = useRef<ClassroomModalRef>(null);
 
   const handleEdit = (item: ClassroomType) => {
@@ -36,6 +36,7 @@ export default function Classrooms({ list,onRefresh }: ClassroomsProps) {
 
 // 排期的类型
 export interface ScheduleType {
+  teacherId?: number;
   examId?: number;
   courseId?: number;
   courseName?: string;
@@ -71,15 +72,15 @@ function Classroom({ value, onEdit }: ClassroomProps) {
           wrap="wrap"
           align="flex-start">
           {scheduleList?.map((item, index) => {
-             // 格式化显示样式
-             let format = "";
-             if (item.type === "COURSE") {
-               format = `${item.courseName}(${item.courseBegin}-${
-                 item.courseBegin! + item.num! - 1
-               })`;
-             } else {
-               format = `课程`;
-             }
+            // 格式化显示样式
+            let format = "";
+            if (item.type === "COURSE") {
+              format = `${item.courseName}(${item.courseBegin}-${
+                item.courseBegin! + item.num! - 1
+              })`;
+            } else {
+              format = `课程`;
+            }
             const color = colors[index];
             return (
               <Tag key={"t" + item.type + index} color={color}>

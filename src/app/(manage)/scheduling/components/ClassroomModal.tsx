@@ -18,7 +18,7 @@ import {
   HighlightOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { ClassroomType, ScheduleType } from "./Classrooms";
 import { useSelectData } from "@/hook/useSelectData";
 
@@ -31,7 +31,7 @@ function initData(): ClassroomType {
   return {
     id: null,
     name: "",
-    whenDay:"",
+    whenDay: "",
     scheduleList: [],
   };
 }
@@ -75,6 +75,7 @@ export const ClassroomModal = forwardRef<
   const [form] = Form.useForm();
   const courseList = useSelectData("courseList");
   const [messageApi, contextHolder] = message.useMessage();
+  const editIndex = useRef<number | null>(null);
 
   // 修改状态
   const { scheduleList } = data;
@@ -111,12 +112,15 @@ export const ClassroomModal = forwardRef<
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    form.resetFields();
   };
 
-  const handleEditItem = (item: ScheduleType) => {
+  const handleEditItem = (item: ScheduleType, index: number) => {
+    editIndex.current = index;
+    console.log("editIndex", editIndex);
     form.setFieldsValue(item);
   };
-
+  // 删除排期项
   const handleDeleteItem = (index: number) => {
     const { scheduleList = [], ...other } = data;
     setData({
@@ -125,16 +129,32 @@ export const ClassroomModal = forwardRef<
     });
   };
 
-  const handleFormFinish: FormProps<ScheduleType>["onFinish"] = ({
-    ...item
-  }) => {
+  /** 添加排期项 */
+  const handleFormFinish: FormProps<ScheduleType>["onFinish"] = (item) => {
     const { scheduleList = [], ...other } = data;
     item.courseName = courseList.find((it) => it.id === item.courseId).name;
+    item.teacherId = courseList.find((it) => it.id === item.courseId).teacherId;
     item.whenDay = data.whenDay;
-    setData({
-      ...other,
-      scheduleList: [...scheduleList, item],
-    });
+
+    // editIndex有值为编辑
+    if (editIndex.current !== null) {
+      setData({
+        ...other,
+        scheduleList: scheduleList.map((it, index) => {
+          if (index === editIndex.current) {
+            return item;
+          } else {
+            return it;
+          }
+        }),
+      });
+      editIndex.current = null;
+    } else {
+      setData({
+        ...other,
+        scheduleList: [...scheduleList, item],
+      });
+    }
     form.resetFields();
   };
 
@@ -167,8 +187,8 @@ export const ClassroomModal = forwardRef<
     required: "'${label}'不能为空",
   };
 
+  // 保存排期信息
   const handleSave = () => {
-    console.log("data", data);
     fetch("/api/scheduling", {
       method: "POST",
       headers: {
@@ -176,10 +196,15 @@ export const ClassroomModal = forwardRef<
       },
       body: JSON.stringify(data),
     })
+      .then((res) => res.json())
       .then((res) => {
-        onSubmit?.();
-        messageApi.success("操作成功");
-        handleCancel();
+        if (res.status === 200) {
+          onSubmit?.();
+          messageApi.success("操作成功");
+          handleCancel();
+        } else {
+          messageApi.error("老师或课程时间冲突！");
+        }
       })
       .catch(() => {
         messageApi.error("操作失败");
@@ -194,7 +219,7 @@ export const ClassroomModal = forwardRef<
       footer={null}
       width={600}
       open={isModalOpen}>
-        {contextHolder}
+      {contextHolder}
       <div className="flex h-[350px]">
         <div className="flex-1">
           <p className="font-bold text-center">当前排期</p>
@@ -221,7 +246,7 @@ export const ClassroomModal = forwardRef<
                       <Button
                         type="text"
                         icon={<EditOutlined />}
-                        onClick={() => handleEditItem(item)}></Button>
+                        onClick={() => handleEditItem(item, index)}></Button>
 
                       <Button
                         type="text"
@@ -343,7 +368,12 @@ export const ClassroomModal = forwardRef<
                   htmlType="submit">
                   添加
                 </Button>
-                <Button htmlType="button" onClick={() => form.resetFields()}>
+                <Button
+                  htmlType="button"
+                  onClick={() => {
+                    form.resetFields();
+                    editIndex.current = null;
+                  }}>
                   重置
                 </Button>
               </Space>

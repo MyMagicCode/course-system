@@ -31,5 +31,26 @@ const selector = {
       },
     }),
   classrooms: () => prisma.classroom.findMany({}),
-  courseList: () => prisma.course.findMany(),
+  courseList: () =>
+    prisma.course
+      .findMany({
+        include: {
+          courseOnTeacher: {
+            include: {
+              teacher: true,
+            },
+          },
+        },
+      })
+      .then((list) => {
+        return list.map(({ courseOnTeacher, ...other }) => {
+          const teacher = courseOnTeacher.find(
+            (item) => item.teacher.title === "FORMAL"
+          );
+          return {
+            ...other,
+            teacherId: teacher?.teacherId,
+          };
+        });
+      }),
 };

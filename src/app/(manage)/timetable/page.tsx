@@ -1,46 +1,63 @@
 "use client";
-import { Button, Form, Input } from "antd";
+import { useAntTable } from "@/hook/useAntTable";
+import { Button, DatePicker, Form, Input, Spin } from "antd";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 
 interface TimetableItem {
-  date: string;
-  begin: string;
+  whenDay: string;
+  courseBegin: string;
   num: string;
   content: string;
 }
 
 const data: TimetableItem[] = [
   {
-    date: "2024-04-03",
-    begin: "2",
+    whenDay: "2024-04-03",
+    courseBegin: "2",
     num: "2",
     content: "Java程序设计@A栋5013(2-3)",
   },
   {
-    date: "2024-04-03",
-    begin: "4",
+    whenDay: "2024-04-03",
+    courseBegin: "4",
     num: "2",
     content: "大数据与开发@A栋5013(2-3)",
   },
   {
-    date: "2024-04-03",
-    begin: "8",
+    whenDay: "2024-04-03",
+    courseBegin: "8",
     num: "2",
     content: "时事政治@A栋5013(2-3)",
   },
   {
-    date: "2024-04-04",
-    begin: "1",
+    whenDay: "2024-04-04",
+    courseBegin: "1",
     num: "3",
     content: "Java程序设计@A栋4003(2-3)",
   },
 ];
 
 export default function Timetable() {
-  const handleQuery = () => {};
+  const [dataList, , loading, , query] = useAntTable<TimetableItem>(
+    "/api/timetable/list",
+    {
+      startDate: dayjs().startOf("week").format("YYYY-MM-DD"),
+      endDate: dayjs().endOf("week").format("YYYY-MM-DD"),
+    }
+  );
+
+  const handleQuery = ({ date }: any) => {
+    const day = dayjs(date);
+    const queryData = {
+      startDate: day.startOf("week").format("YYYY-MM-DD"),
+      endDate: day.endOf("week").format("YYYY-MM-DD"),
+    };
+    query(queryData);
+  };
+
   const bodyContent = useMemo(() => {
-    const timetableList = generateTableList(data);
+    const timetableList = generateTableList(dataList);
     return timetableList.map((list, i) => {
       return (
         <tr
@@ -70,14 +87,17 @@ export default function Timetable() {
         </tr>
       );
     });
-  }, [data]);
+  }, [dataList]);
   return (
     <>
       <div className="w-full mt-6 p-5 bg-white rounded-xl">
         <Form
           layout="inline"
-          initialValues={{ layout: "inline" }}
+          initialValues={{ date: dayjs() }}
           onFinish={handleQuery}>
+          <Form.Item label="日期" name="date">
+            <DatePicker placeholder="请输入" picker="week" />
+          </Form.Item>
           <Form.Item label="学期名称" name="name">
             <Input placeholder="请输入" />
           </Form.Item>
@@ -88,39 +108,41 @@ export default function Timetable() {
           </Form.Item>
         </Form>
       </div>
-      <div className="relative custom-scrollbar overflow-x-auto shadow-md sm:rounded-lg mt-5 overflow-y-scroll h-[calc(100vh-180px)]">
-        <table className="w-full table-fixed text-sm text-left rtl:text-right text-gray-700 ">
-          <thead className="text-xs text-gray-700 bg-gray-50 ">
-            <tr>
-              <th scope="col" className="px-6 py-3 w-[80px]">
-                时间
-              </th>
-              <th scope="col" className="px-6 py-3">
-                一
-              </th>
-              <th scope="col" className="px-6 py-3">
-                二
-              </th>
-              <th scope="col" className="px-6 py-3">
-                三
-              </th>
-              <th scope="col" className="px-6 py-3">
-                四
-              </th>
-              <th scope="col" className="px-6 py-3">
-                五
-              </th>
-              <th scope="col" className="px-6 py-3">
-                六
-              </th>
-              <th scope="col" className="px-6 py-3">
-                天
-              </th>
-            </tr>
-          </thead>
-          <tbody>{bodyContent}</tbody>
-        </table>
-      </div>
+      <Spin spinning={loading}>
+        <div className="relative custom-scrollbar overflow-x-auto shadow-md sm:rounded-lg mt-5 overflow-y-scroll h-[calc(100vh-180px)]">
+          <table className="w-full table-fixed text-sm text-left rtl:text-right text-gray-700 ">
+            <thead className="text-xs text-gray-700 bg-gray-50 ">
+              <tr>
+                <th scope="col" className="px-6 py-3 w-[80px]">
+                  时间
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  一
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  二
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  三
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  四
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  五
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  六
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  天
+                </th>
+              </tr>
+            </thead>
+            <tbody>{bodyContent}</tbody>
+          </table>
+        </div>
+      </Spin>
     </>
   );
 }
@@ -156,9 +178,10 @@ function generateTableList(list: TimetableItem[]) {
       };
     });
   });
-  list.forEach((item) => {
-    const y = dayjs(item.date).day();
-    const x = parseInt(item.begin) - 1;
+  list?.forEach((item) => {
+    let y = dayjs(item.whenDay).day();
+    y = y === 0 ? 7 : y;
+    const x = parseInt(item.courseBegin) - 1;
     const col = dataList[x][y];
 
     // 合并行
