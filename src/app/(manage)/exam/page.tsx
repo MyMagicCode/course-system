@@ -3,10 +3,12 @@ import { Button, Form, Input, Space, Table, TableProps, message } from "antd";
 import { ExamModal, ExamModalRef, ExamModel } from "./components/ExamModal";
 import { useRef } from "react";
 import { useAntTable } from "@/hook/useAntTable";
+import { useIsAdmin } from "@/hook/useIsAdmin";
 
 export default function Exam() {
   const ExamModalRef = useRef<ExamModalRef>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const isAdmin = useIsAdmin();
 
   const [tableData, tableParams, loading, handleTableChange, query] =
     useAntTable("/api/exam/list");
@@ -37,7 +39,7 @@ export default function Exam() {
       title: "序号",
       key: "index",
       width: 80,
-      render: (_, __, index) => <a>{index + 1}</a>,
+      render: (_, __, index) => <span>{index + 1}</span>,
     },
     {
       title: "考试名称",
@@ -59,7 +61,11 @@ export default function Exam() {
       dataIndex: "position",
       key: "position",
     },
-    {
+  ];
+
+  // 管理员才能编辑和删除
+  if (isAdmin) {
+    columns.push({
       title: "操作",
       key: "action",
       width: 100,
@@ -73,8 +79,8 @@ export default function Exam() {
           </Button>
         </Space>
       ),
-    },
-  ];
+    });
+  }
 
   const handleQuery = (fromData: any) => {
     query({ ...fromData });
@@ -98,12 +104,14 @@ export default function Exam() {
         </Form>
       </div>
       <div className="w-full mt-4 p-5 bg-white rounded-xl">
-        <Button
-          type="primary"
-          className="bg-[#1677ff] mb-2"
-          onClick={() => ExamModalRef.current?.open()}>
-          添加
-        </Button>
+        {isAdmin && (
+          <Button
+            type="primary"
+            className="bg-[#1677ff] mb-2"
+            onClick={() => ExamModalRef.current?.open()}>
+            添加
+          </Button>
+        )}
         <Table
           columns={columns}
           dataSource={tableData}

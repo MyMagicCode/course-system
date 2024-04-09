@@ -2,7 +2,7 @@
 import React, { PropsWithChildren } from "react";
 import type { MenuProps } from "antd";
 import { Button, Layout, Menu } from "antd";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
@@ -16,6 +16,15 @@ export default function ManageLayout({ children }: PropsWithChildren) {
   const handleClick: MenuProps["onClick"] = ({ key }) => {
     router.push(key);
   };
+
+  const handleExit = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
   return (
     <Layout>
       <Header
@@ -36,10 +45,8 @@ export default function ManageLayout({ children }: PropsWithChildren) {
           />
         </div>
         <div>
-          <span className="text-zinc-100 mr-4">
-          Hi {session?.user?.name}!
-          </span>
-          <Button type="primary" color="primary" href="/api/auth/signout">
+          <span className="text-zinc-100 mr-4">Hi {session?.user?.name}!</span>
+          <Button type="primary" color="primary" onClick={handleExit}>
             退出
           </Button>
         </div>

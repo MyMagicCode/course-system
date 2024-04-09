@@ -6,6 +6,7 @@ declare module "next-auth" {
     account: string;
     name: string | null;
     role: string;
+    teacherId: number | null;
   }
 
   interface Session extends DefaultSession {

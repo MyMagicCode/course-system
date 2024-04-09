@@ -1,5 +1,14 @@
 "use client";
-import { Button, Form, Input, Space, Table, TableProps, Tooltip, message } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Space,
+  Table,
+  TableProps,
+  Tooltip,
+  message,
+} from "antd";
 import {
   CourseModal,
   CourseModalRef,
@@ -7,10 +16,12 @@ import {
 } from "./components/CourseModal";
 import { useRef } from "react";
 import { useAntTable } from "@/hook/useAntTable";
+import { useIsAdmin } from "@/hook/useIsAdmin";
 
 export default function Course() {
   const CourseModalRef = useRef<CourseModalRef>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const isAdmin = useIsAdmin();
 
   const [tableData, tableParams, loading, handleTableChange, query] =
     useAntTable("/api/course/list");
@@ -40,7 +51,7 @@ export default function Course() {
       title: "序号",
       key: "index",
       width: 80,
-      render: (_, __, index) => <a>{index + 1}</a>,
+      render: (_, __, index) => <span>{index + 1}</span>,
     },
     {
       title: "课程名称",
@@ -48,9 +59,7 @@ export default function Course() {
       key: "name",
       render: (text, record) => (
         <Tooltip placement="top" title={text}>
-          <div className="truncate">
-            {text}
-          </div>
+          <div className="truncate">{text}</div>
         </Tooltip>
       ),
     },
@@ -61,7 +70,7 @@ export default function Course() {
       width: 400,
       render: (text, record) => (
         <Tooltip placement="top" title={text}>
-          <div className="truncate" style={{width:400}}>
+          <div className="truncate" style={{ width: 400 }}>
             {text}
           </div>
         </Tooltip>
@@ -87,7 +96,11 @@ export default function Course() {
       dataIndex: "assistantName",
       key: "assistantName",
     },
-    {
+  ];
+
+  // 管理员才能编辑和删除
+  if (isAdmin) {
+    columns.push({
       title: "操作",
       key: "action",
       width: 100,
@@ -101,8 +114,8 @@ export default function Course() {
           </Button>
         </Space>
       ),
-    },
-  ];
+    });
+  }
 
   const handleQuery = (fromData: any) => {
     query({ ...fromData });
@@ -114,8 +127,7 @@ export default function Course() {
         <Form
           layout="inline"
           initialValues={{ layout: "inline" }}
-          onFinish={handleQuery}
-        >
+          onFinish={handleQuery}>
           <Form.Item label="课程名称" name="name">
             <Input placeholder="请输入" />
           </Form.Item>
@@ -127,13 +139,14 @@ export default function Course() {
         </Form>
       </div>
       <div className="w-full mt-4 p-5 bg-white rounded-xl">
-        <Button
-          type="primary"
-          className="bg-[#1677ff] mb-2"
-          onClick={() => CourseModalRef.current?.open()}
-        >
-          添加
-        </Button>
+        {isAdmin && (
+          <Button
+            type="primary"
+            className="bg-[#1677ff] mb-2"
+            onClick={() => CourseModalRef.current?.open()}>
+            添加
+          </Button>
+        )}
         <Table
           columns={columns}
           dataSource={tableData}
@@ -144,9 +157,12 @@ export default function Course() {
           onChange={handleTableChange}
         />
       </div>
-      <CourseModal onSubmit={()=>{
-        query({})
-      }} ref={CourseModalRef} />
+      <CourseModal
+        onSubmit={() => {
+          query({});
+        }}
+        ref={CourseModalRef}
+      />
     </>
   );
 }

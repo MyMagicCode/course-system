@@ -30,12 +30,13 @@ export const authOptions: AuthOptions = {
 
           if (findUser !== null) {
             // 使用Ts的小伙伴需要自己重新声明一下User接口，要么编辑器会提示没有apiToken等其他多余的属性
-            const { name, account, id, role } = findUser;
+            const { name, account, id, role, teacherId } = findUser;
             const user = {
               id: String(id),
               name,
               account,
               role,
+              teacherId,
             };
             return { ...user };
           } else {
@@ -54,6 +55,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.teacherId = user.teacherId;
       }
       return token;
     },
@@ -64,6 +66,7 @@ export const authOptions: AuthOptions = {
         user: {
           ...session.user,
           role: token.role, // 传递给session
+          teacherId: token.teacherId,
           id: token.id, // 传递给session
         },
         error: token.error,

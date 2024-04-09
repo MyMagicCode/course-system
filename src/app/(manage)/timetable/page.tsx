@@ -1,6 +1,8 @@
 "use client";
 import { useAntTable } from "@/hook/useAntTable";
-import { Button, DatePicker, Form, Input, Spin } from "antd";
+import { useIsAdmin } from "@/hook/useIsAdmin";
+import { useSelectData } from "@/hook/useSelectData";
+import { Button, DatePicker, Form, Input, Select, Spin } from "antd";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 
@@ -11,8 +13,12 @@ interface TimetableItem {
   content: string;
 }
 
+const fieldNames = { label: "name", value: "id" };
+
 export default function Timetable() {
   const [form] = Form.useForm();
+  const isAdmin = useIsAdmin();
+  const teachers = useSelectData("teachers");
   const [dataList, , loading, , query] = useAntTable<TimetableItem>(
     "/api/timetable/list",
     {
@@ -21,11 +27,12 @@ export default function Timetable() {
     }
   );
 
-  const handleQuery = ({ date }: any) => {
+  const handleQuery = ({ date, teacherId }: any) => {
     const day = dayjs(date);
     const queryData = {
       startDate: day.startOf("week").format("YYYY-MM-DD"),
       endDate: day.endOf("week").format("YYYY-MM-DD"),
+      teacherId,
     };
     query(queryData);
   };
@@ -77,6 +84,16 @@ export default function Timetable() {
               picker="week"
             />
           </Form.Item>
+          {isAdmin && (
+            <Form.Item label="任课老师" name="teacherId">
+              <Select
+                allowClear
+                options={teachers}
+                fieldNames={fieldNames}
+                placeholder="请选择"
+              />
+            </Form.Item>
+          )}
           <Form.Item>
             <Button type="primary" className="bg-[#1677ff]" htmlType="submit">
               搜索

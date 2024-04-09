@@ -3,6 +3,7 @@ import { EditOutlined } from "@ant-design/icons";
 import { ClassroomModal, ClassroomModalRef } from "./ClassroomModal";
 import { useRef } from "react";
 import { Dayjs } from "dayjs";
+import { useIsAdmin } from "@/hook/useIsAdmin";
 
 const { Text } = Typography;
 
@@ -67,6 +68,7 @@ interface ClassroomProps {
 
 function Classroom({ value, onEdit }: ClassroomProps) {
   const { name, scheduleList } = value;
+  const isAdmin = useIsAdmin();
   return (
     <div className="w-[360px] h-[200px] p-4 rounded-xl bg-white shadow-md">
       <Text>{name}</Text>
@@ -96,10 +98,12 @@ function Classroom({ value, onEdit }: ClassroomProps) {
         </Flex>
       </div>
       <div className="text-center">
-        <Button
-          type="text"
-          icon={<EditOutlined />}
-          onClick={() => onEdit(value)}></Button>
+        {isAdmin && (
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(value)}></Button>
+        )}
       </div>
     </div>
   );

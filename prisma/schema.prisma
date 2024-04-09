@@ -139,7 +139,6 @@ model Schedules {
   course      course?        @relation(fields: [courseId], references: [id])
 
   @@unique([whenDay, courseNum, teacherId])
-  @@unique([whenDay, courseNum])
 }
 
 enum Schedules_Type {

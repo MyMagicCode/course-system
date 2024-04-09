@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import dayjs from "dayjs";
 import { groupByArray } from "@/utils/tools";
+import { getToken } from "next-auth/jwt";
 
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
+  const token = await getToken({ req: request });
 
-  const { startDate, endDate } = Object.fromEntries(searchParams);
+  const { startDate, endDate, teacherId } = Object.fromEntries(searchParams);
+  const numberId = parseInt(teacherId);
 
   const list = await prisma.schedules.findMany({
     where: {
@@ -17,6 +20,7 @@ export async function GET(request: NextRequest) {
         lte: new Date(endDate),
       },
       type: "COURSE",
+      teacherId: numberId || token?.teacherId || null,
     },
     include: {
       course: true,

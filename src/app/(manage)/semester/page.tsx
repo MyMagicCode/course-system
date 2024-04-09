@@ -7,10 +7,12 @@ import {
 } from "./components/SemesterModal";
 import { useRef } from "react";
 import { useAntTable } from "@/hook/useAntTable";
+import { useIsAdmin } from "@/hook/useIsAdmin";
 
 export default function Semester() {
   const semesterModalRef = useRef<SemesterModalRef>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const isAdmin = useIsAdmin();
 
   const [tableData, tableParams, loading, handleTableChange, query] =
     useAntTable("/api/semester/list");
@@ -19,28 +21,28 @@ export default function Semester() {
     semesterModalRef.current?.open(item);
   };
 
-  const handleDelete = async (item: SemesterModel)=>{
+  const handleDelete = async (item: SemesterModel) => {
     try {
-      await fetch('/api/semester', {
-        method: 'DELETE',
+      await fetch("/api/semester", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id:item.id }),
-      })
-      messageApi.success("操作成功")
-      handleQuery({})
+        body: JSON.stringify({ id: item.id }),
+      });
+      messageApi.success("操作成功");
+      handleQuery({});
     } catch (error) {
-      messageApi.error("操作失败")
+      messageApi.error("操作失败");
     }
-  }
+  };
 
   const columns: TableProps<SemesterModel>["columns"] = [
     {
       title: "序号",
       key: "index",
       width: 80,
-      render: (_, __, index) => <a>{index + 1}</a>,
+      render: (_, __, index) => <span>{index + 1}</span>,
     },
     {
       title: "学期名称",
@@ -58,12 +60,14 @@ export default function Semester() {
       key: "endDate",
     },
     {
-      title: "创建事件",
+      title: "创建时间",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (text) => <a>{text}</a>,
     },
-    {
+  ];
+  // 管理员才能编辑和删除
+  if (isAdmin) {
+    columns.push({
       title: "操作",
       key: "action",
       width: 100,
@@ -72,20 +76,20 @@ export default function Semester() {
           <Button type="link" onClick={() => handleEdit(record)}>
             编辑
           </Button>
-          <Button type="link" danger onClick={()=>handleDelete(record)}>
+          <Button type="link" danger onClick={() => handleDelete(record)}>
             删除
           </Button>
         </Space>
       ),
-    },
-  ];
+    });
+  }
 
   const handleQuery = (fromData: any) => {
     query({ ...fromData });
   };
   return (
     <>
-        {contextHolder}
+      {contextHolder}
       <div className="w-full mt-6 p-5 bg-white rounded-xl">
         <Form
           layout="inline"
@@ -102,12 +106,14 @@ export default function Semester() {
         </Form>
       </div>
       <div className="w-full mt-4 p-5 bg-white rounded-xl">
-        <Button
-          type="primary"
-          className="bg-[#1677ff] mb-2"
-          onClick={() => semesterModalRef.current?.open()}>
-          添加
-        </Button>
+        {isAdmin && (
+          <Button
+            type="primary"
+            className="bg-[#1677ff] mb-2"
+            onClick={() => semesterModalRef.current?.open()}>
+            添加
+          </Button>
+        )}
         <Table
           columns={columns}
           dataSource={tableData}
@@ -118,11 +124,13 @@ export default function Semester() {
           onChange={handleTableChange}
         />
       </div>
-      <SemesterModal onSubmit={()=>{
-        console.log("object");
-        query({})
-      }} ref={semesterModalRef} />
+      <SemesterModal
+        onSubmit={() => {
+          console.log("object");
+          query({});
+        }}
+        ref={semesterModalRef}
+      />
     </>
   );
 }
-
