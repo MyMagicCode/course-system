@@ -6,7 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 const prisma = new PrismaClient();
 
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
   pages: {
     signIn: "/auth/signIn",
   },

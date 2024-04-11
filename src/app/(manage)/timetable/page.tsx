@@ -82,6 +82,7 @@ export default function Timetable() {
               onChange={() => form.submit()}
               placeholder="请输入"
               picker="week"
+              allowClear={false}
             />
           </Form.Item>
           {isAdmin && (

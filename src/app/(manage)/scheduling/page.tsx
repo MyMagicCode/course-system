@@ -34,7 +34,7 @@ export default function Scheduling() {
           initialValues={{ date: dayjs() }}
           onFinish={handleQuery}>
           <Form.Item label="日期" name="date">
-            <DatePicker placeholder="请输入" onChange={() => form.submit()} />
+            <DatePicker placeholder="请输入" allowClear={false} onChange={() => form.submit()} />
           </Form.Item>
           <Form.Item label="教室名称" name="name">
             <Input allowClear placeholder="请输入" />

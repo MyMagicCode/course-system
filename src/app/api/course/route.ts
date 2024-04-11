@@ -110,7 +110,7 @@ export async function DELETE(req: Request) {
       },
     });
 
-    prisma.$transaction([delMN, del]);
+    await prisma.$transaction([delMN, del]);
   } catch (error) {
     res.status = 400;
     res.msg = JSON.stringify(error);
