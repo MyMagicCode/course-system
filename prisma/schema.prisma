@@ -15,13 +15,17 @@ model user {
   role      Role
   /// 用户名称
   name      String?
-  teacherId Int?     @unique
-  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teacher   Teacher?
+  student   student?
 }
 
+// 角色字典
 enum Role {
   ADMIN
   TEACHER
+  STUDENT
 }
 
 // 学期表模型
@@ -51,6 +55,7 @@ model course {
   courseOnTeacher courseOnTeacher[]
   Exam            Exam[]
   Schedules       Schedules[]
+  StudentCourse   StudentCourse[]
 }
 
 // 教师表模型
@@ -65,7 +70,8 @@ model Teacher {
   courseOnTeacher courseOnTeacher[]
   course          course?           @relation(fields: [courseId], references: [id])
   courseId        Int?
-  user            user?
+  userId          Int?              @unique
+  user            user?             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model courseOnTeacher {
@@ -79,10 +85,23 @@ model courseOnTeacher {
 
 // 学生表模型
 model student {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int             @id @default(autoincrement())
+  name          String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  userId        Int?            @unique
+  user          user?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  StudentCourse StudentCourse[]
+}
+
+// 选课表模型=> 学生m to n课程 多对多关系
+model StudentCourse {
+  studentId Int
+  courseId  Int
+  student   student @relation(fields: [studentId], references: [id])
+  course    course  @relation(fields: [courseId], references: [id])
+
+  @@id([studentId, courseId])
 }
 
 // 考试表模型

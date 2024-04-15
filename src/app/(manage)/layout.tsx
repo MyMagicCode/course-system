@@ -64,6 +64,10 @@ const menuList: MenuProps["items"] = [
     label: "课程表",
   },
   {
+    key: "/user",
+    label: "用户",
+  },
+  {
     key: "/semester",
     label: "学期",
   },
