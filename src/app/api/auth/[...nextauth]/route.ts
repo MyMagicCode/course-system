@@ -26,17 +26,20 @@ const authOptions: AuthOptions = {
               account: credentials.username,
               password: credentials.password,
             },
+            include: {
+              teacher: true,
+            },
           });
 
           if (findUser !== null) {
             // 使用Ts的小伙伴需要自己重新声明一下User接口，要么编辑器会提示没有apiToken等其他多余的属性
-            const { name, account, id, role, teacherId } = findUser;
+            const { name, account, id, role, teacher } = findUser;
             const user = {
               id: String(id),
               name,
               account,
               role,
-              teacherId,
+              teacherId: teacher?.id,
             };
             return { ...user };
           } else {

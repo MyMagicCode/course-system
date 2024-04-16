@@ -195,8 +195,7 @@ export const UserModal = forwardRef<UserModalRef, { onSubmit: () => void }>(
             <Input />
           </Form.Item>
 
-          {/* Field */}
-          <Form.Item
+          {/* <Form.Item
             label="确认密码"
             name="password2"
             dependencies={["password"]}
@@ -214,7 +213,7 @@ export const UserModal = forwardRef<UserModalRef, { onSubmit: () => void }>(
               }),
             ]}>
             <Input />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
             <Button type="primary" className="bg-[#1677ff]" htmlType="submit">
               提交

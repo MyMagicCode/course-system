@@ -10,8 +10,23 @@ const { Header, Content } = Layout;
 
 export default function ManageLayout({ children }: PropsWithChildren) {
   const { data: session } = useSession();
+  const displayMenuList = [...menuList!];
+  const isAdmin = session?.user?.role === "ADMIN";
   const router = useRouter();
   const pathname = usePathname();
+
+  if (isAdmin) {
+    displayMenuList?.push(
+      {
+        key: "/course-selection",
+        label: "选课",
+      },
+      {
+        key: "/user",
+        label: "用户",
+      }
+    );
+  }
 
   const handleClick: MenuProps["onClick"] = ({ key }) => {
     router.push(key);
@@ -34,13 +49,13 @@ export default function ManageLayout({ children }: PropsWithChildren) {
           alignItems: "center",
         }}>
         <div className="text-zinc-100 mr-4">排课系统</div>
-        <div style={{ maxWidth: "600px" }}>
+        <div style={{ maxWidth: "700px" }}>
           <Menu
             theme="dark"
             onClick={handleClick}
             mode="horizontal"
             defaultSelectedKeys={[pathname]}
-            items={menuList}
+            items={displayMenuList}
             style={{ flex: 1, minWidth: 0 }}
           />
         </div>
@@ -62,10 +77,6 @@ const menuList: MenuProps["items"] = [
   {
     key: "/timetable",
     label: "课程表",
-  },
-  {
-    key: "/user",
-    label: "用户",
   },
   {
     key: "/semester",

@@ -12,6 +12,25 @@ export async function GET(request: NextRequest) {
 
   const { startDate, endDate, teacherId } = Object.fromEntries(searchParams);
   const numberId = parseInt(teacherId);
+  const role = token?.role;
+  let courseIds: number[] | undefined = undefined;
+
+  if (role === "STUDENT") {
+    const student = await prisma.student.findUnique({
+      where: {
+        userId: parseInt(token?.id as string),
+      },
+    });
+    const courses = await prisma.studentCourse.findMany({
+      where: {
+        studentId: student?.id,
+      },
+    });
+    courseIds = courses.map((it) => it.courseId);
+  }
+
+  const calcTeacherId =
+    role === "STUDENT" ? undefined : numberId || token?.teacherId || null;
 
   const list = await prisma.schedules.findMany({
     where: {
@@ -20,7 +39,10 @@ export async function GET(request: NextRequest) {
         lte: new Date(endDate),
       },
       type: "COURSE",
-      teacherId: numberId || token?.teacherId || null,
+      teacherId: calcTeacherId,
+      courseId: {
+        in: courseIds,
+      },
     },
     include: {
       course: true,
