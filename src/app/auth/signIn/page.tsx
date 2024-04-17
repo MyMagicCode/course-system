@@ -40,6 +40,7 @@ export default function SignIn() {
       if (!res?.ok) {
         setErrorMsg(res?.error || "登录失败！");
         setIsError(true);
+        handleRefresh()
       } else {
         route.push("/timetable");
       }

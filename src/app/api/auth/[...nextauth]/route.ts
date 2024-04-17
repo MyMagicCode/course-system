@@ -22,7 +22,12 @@ const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         if (typeof credentials !== "undefined") {
-          if (!validateCodeCache(credentials.uuid, credentials.verification)) {
+          if (
+            !validateCodeCache(
+              credentials.uuid,
+              credentials.verification.toUpperCase()
+            )
+          ) {
             throw new Error("验证码错误或失效！");
           }
           // 认证邮件和密码是否正确
