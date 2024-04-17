@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { validateCodeCache } from "../code/cache";
 
 const prisma = new PrismaClient();
 
@@ -16,9 +17,14 @@ const authOptions: AuthOptions = {
       credentials: {
         username: { label: "账号", type: "text" },
         password: { label: "密码", type: "password" },
+        verification: { label: "验证码", type: "text" },
+        uuid: { type: "text" },
       },
       async authorize(credentials, req) {
         if (typeof credentials !== "undefined") {
+          if (!validateCodeCache(credentials.uuid, credentials.verification)) {
+            throw new Error("验证码错误或失效！");
+          }
           // 认证邮件和密码是否正确
           // const res = await authenticate(credentials.email, credentials.password)
           const findUser = await prisma.user.findUnique({
@@ -43,7 +49,7 @@ const authOptions: AuthOptions = {
             };
             return { ...user };
           } else {
-            return null;
+            throw new Error("密码或账户错误！");
           }
         } else {
           return null;
