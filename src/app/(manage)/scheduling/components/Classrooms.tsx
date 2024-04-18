@@ -21,7 +21,7 @@ export default function Classrooms({ list, onRefresh }: ClassroomsProps) {
 
   return (
     <>
-      <Flex rootClassName="mt-5" wrap="wrap" gap="middle">
+      <Flex rootClassName="mt-5 overflow-y-scroll h-[calc(100vh-180px)] custom-scrollbar" wrap="wrap" gap="middle">
         {list.map((item) => {
           return (
             <Classroom

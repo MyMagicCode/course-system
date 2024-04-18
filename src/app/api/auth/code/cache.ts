@@ -1,7 +1,7 @@
 const cache = new Map<string, { createdAt: number; value: string }>();
 
 // 缓存的时间(毫秒)
-const CACHE_TIME = 60 * 1000;
+const CACHE_TIME = 3 * 60 * 1000;
 
 /**
  * 添加缓存
@@ -26,6 +26,7 @@ export function validateCodeCache(key: string, value: string) {
   if (cache.has(key)) {
     const now = +new Date();
     const item = cache.get(key)!;
+    // 判断是否超时和值是否相等
     return now - item.createdAt <= CACHE_TIME && item.value === value;
   } else {
     return false;

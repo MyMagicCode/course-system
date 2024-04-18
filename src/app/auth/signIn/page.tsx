@@ -18,7 +18,7 @@ export default function SignIn() {
   }, []);
 
   const handleRefresh = () => {
-    fetch("/api/auth/code")
+    fetch("/api/auth/code",{cache:"no-store"})
       .then((res) => res.json())
       .then((res) => {
         setCodeObj(res);

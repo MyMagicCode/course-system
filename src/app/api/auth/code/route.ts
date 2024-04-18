@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { addCodeCache } from "./cache";
 
+export const revalidate = 0;
+
 export async function GET() {
   const uniqueId = generateUniqueId();
   const res = await fetch(
