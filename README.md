@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## 👋介绍
 
-## Getting Started
+本项目是一个排课系统，支持管理员、教师、学生三类用户，密码采用MD5加密后的密文存储，只有管理员才能对系统操作数据；系统功能模块有学期、课程、考试，排期、添加用户等。排期完成后会可以在课程表模块查看排课信息。
 
-First, run the development server:
+**主要技术栈：**nextjs + prisma + MySQL + next-auth+ant-design；
+
+![](.\doc\home.png)
+
+## 😃开始启动
+
+首先启动验证码服务（只有验证码服务是通过python启动）
+
+```bash
+cd ./server
+python ./index.py
+```
+
+然后（需要确定终端是在项目根目录）
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 打包
+npm run build
+# 打包后启动
+npm run start
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
